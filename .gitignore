@@ -1,0 +1,8 @@
+# virtualenv directory
+venv/
+
+#plexe module
+plexe-pyapi/
+
+#DS_Store
+.DS_Store
