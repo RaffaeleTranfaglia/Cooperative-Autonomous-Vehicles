@@ -3,29 +3,33 @@ import random
 from plexe import Plexe, ACC, CACC
 
 # inter-vehicle distance
-DISTANCE = 1.5
+DISTANCE = 1
 
 class PlatoonManager:
-    plexe = Plexe()
+    def __init__(self, plexe = Plexe()):
+        self.plexe = plexe
     
-    
-    @classmethod
-    def create_platoon(cls, vids):
-        sorted_vids = sorted(vids, key=lambda x : traci.vehicle.getLanePosition(x), reverse=True)
-        # add a platoon of n vehicles
+    """ 
+    create a platoon of n vehicles
+    :param lid: leader id
+    :param vids: list of members' ids to add to the platoon
+    :return: returns the topology of the platoon, i.e., a dictionary which
+    indicates, for each vehicle, who is its leader and who is its front
+    vehicle.
+    """
+    def create_platoon(self, lid, vids):
+        traci.vehicle.setSpeedMode(lid, 0)
+        traci.vehicle.setColor(vid, [random.randint(0, 254) for x in range(3)].append(1))
+        self.plexe.set_active_controller(vid, ACC)
         topology = {}
-        for i in range(len(sorted_vids)):
-            vid = sorted_vids[i]
+        for i in range(len(vids)):
+            vid = vids[i]
             traci.vehicle.setSpeedMode(vid, 0)
-            if vid == sorted_vids[0]:
-                traci.vehicle.setColor(vid, [random.randint(0, 254) for x in range(3)].append(1))
-                cls.plexe.set_active_controller(vid, ACC)
-                leader = vid
-            else:
-                traci.vehicle.setColor(vid, traci.vehicle.getColor(leader))
-                cls.plexe.set_active_controller(vid, CACC)
-                cls.plexe.set_path_cacc_parameters(vid, distance=DISTANCE)
-                topology[vid] = {"front" : sorted_vids[i-1], "leader" : leader}
+            traci.vehicle.setColor(vid, traci.vehicle.getColor(lid))
+            self.plexe.set_active_controller(vid, CACC)
+            self.plexe.set_path_cacc_parameters(vid, distance=DISTANCE)
+            topology[vid] = {"front" : vids[i], "leader" : lid}
+            #self.plexe.add_member(lid, vid, i)
         return topology
     
 # create a platoon when the next traffic light (the one after the tl in the current edge) 
