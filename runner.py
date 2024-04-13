@@ -82,8 +82,6 @@ if __name__ == "__main__":
                         last_members.append((vids[j+1], getNextEdge(vids[j+1])))
                         i = j
                         
-                
-                
     traci.close()
     sys.stdout.flush()
         
