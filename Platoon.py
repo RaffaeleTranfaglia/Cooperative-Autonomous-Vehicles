@@ -1,14 +1,14 @@
 import traci
 import random
 from typing import Optional
-from plexe import Plexe, ACC, CACC
-
-# inter-vehicle distance
-DISTANCE = 1
+from plexe import Plexe, ACC, CACC, DRIVER
 
 class PlatoonManager:
-    @staticmethod
-    def create_platoon(lid: str, vids: list[str], plexe: Plexe) -> dict[str, dict[str, str]]:
+    # inter-vehicle distance
+    DISTANCE = 1.5
+    
+    @classmethod
+    def create_platoon(cls, lid: str, vids: list[str], plexe: Plexe) -> dict[str, dict[str, str]]:
         """
         Create a platoon of n vehicles.
 
@@ -34,13 +34,13 @@ class PlatoonManager:
             traci.vehicle.setSpeedMode(vid, 0)
             traci.vehicle.setColor(vid, traci.vehicle.getColor(lid))
             plexe.set_active_controller(vid, CACC)
-            plexe.set_path_cacc_parameters(vid, distance=DISTANCE)
+            plexe.set_path_cacc_parameters(vid, distance=cls.DISTANCE)
             topology[vid] = {"front" : frontvid, "leader" : lid}
             plexe.enable_auto_feed(vid, True, lid, frontvid)
         return topology
     
-    @staticmethod
-    def add_vehicle(topology: Optional[dict[str, dict[str, str]]], vid: str, frontvid: str, 
+    @classmethod
+    def add_vehicle(cls, topology: Optional[dict[str, dict[str, str]]], vid: str, frontvid: str, 
                     plexe: Plexe) -> None:
         """
         Add a vehicle to an existing platoon.
@@ -56,13 +56,13 @@ class PlatoonManager:
         traci.vehicle.setSpeedMode(vid, 0)
         traci.vehicle.setColor(vid, traci.vehicle.getColor(lid))
         plexe.set_active_controller(vid, CACC)
-        plexe.set_path_cacc_parameters(vid, distance=DISTANCE)
+        plexe.set_path_cacc_parameters(vid, distance=cls.DISTANCE)
         topology[vid] = {"front" : frontvid, "leader" : lid}
         plexe.enable_auto_feed(vid, True, lid, frontvid)
         return
         
-    @staticmethod
-    def free_platoon(topology: Optional[dict[str, dict[str, str]]], plexe: Plexe) -> None:
+    @classmethod
+    def free_platoon(cls, topology: Optional[dict[str, dict[str, str]]], plexe: Plexe) -> None:
         """
         Disassemble a platoon.
 
@@ -74,6 +74,6 @@ class PlatoonManager:
         print(f"Freeing a platoon composed of {topology.keys}")
         for vid in topology:
             traci.vehicle.setSpeedMode(vid, 31)
-            traci.vehicle.setColor(vid, (255,255,255,1))
-            plexe.set_active_controller(vid, ACC)
+            traci.vehicle.setColor(vid, (255,255,255,255))
+            plexe.set_active_controller(vid, DRIVER)
             plexe.enable_auto_feed(vid, False)
