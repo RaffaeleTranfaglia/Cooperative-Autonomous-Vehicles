@@ -45,7 +45,6 @@ if __name__ == "__main__":
     step = 0
     while step < STEPS:
         traci.simulationStep()
-        
         # check on last platoons members here
         for v, ce, ne in last_members[:]:    # Iterate over a copy of the list
             print(f"vehicle: {v} - currentEdge: {traci.vehicle.getRoadID(v)} - nextEdge: {ne}")
@@ -70,9 +69,9 @@ if __name__ == "__main__":
                             and getNextEdge(vids[i]) == getNextEdge(vids[i+1])):
                             tnext = getPlatoonTopology(vids[i+1], traci.vehicle.getLaneID(vids[i+1]), platoons)
                             PlatoonManager.add_vehicle(tnext if tnext else None, vids[i], vids[i+1], plexe)
-                            for v, e in last_members:
+                            for v, ce, ne in last_members:
                                 if v == vids[i+1]:
-                                    last_members.remove((v, traci.vehicle.getLaneID(v), e))
+                                    last_members.remove((v, ce, ne))
                                     last_members.append((vids[i], traci.vehicle.getLaneID(vids[i]), getNextEdge(vids[i])))
                         
                         lid = vids[i]
@@ -90,6 +89,10 @@ if __name__ == "__main__":
                         i = j
                     else:
                         i -= 1
+                # simulate vehicle communication every step
+                for topology in platoons[lane]:
+                    PlatoonManager.communicate(topology, plexe)
+        step += 0.1
                         
     traci.close()
     sys.stdout.flush()

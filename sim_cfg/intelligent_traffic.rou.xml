@@ -21,9 +21,9 @@
 	<route id="route_10" edges="end4_junction junction_end2"/>
 	<route id="route_11" edges="end4_junction junction_end1"/>
 
-	<flow id="flow0" begin="0" end="500" period="10" type="auto" route="route_0"> </flow>
-	<flow id="flow1" begin="0" end="500" period="10" type="auto" route="route_1"> </flow>
-	<flow id="flow2" begin="0" end="500" period="10" type="auto" route="route_2"> </flow>
+	<flow id="flow0" begin="0" end="500" period="1" type="auto" route="route_0"> </flow>
+	<flow id="flow1" begin="0" end="500" period="1" type="auto" route="route_1"> </flow>
+	<flow id="flow2" begin="0" end="500" period="1" type="auto" route="route_2"> </flow>
 
 	<!-- 
 	<flow id="flow3" begin="0" end="500" period="10" type="auto" route="route_3"> </flow>
