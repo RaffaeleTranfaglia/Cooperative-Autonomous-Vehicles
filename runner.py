@@ -46,12 +46,14 @@ if __name__ == "__main__":
     while step < STEPS:
         traci.simulationStep()
         # check on last platoons members here
-        for v, ce, ne in last_members[:]:    # Iterate over a copy of the list
-            print(f"vehicle: {v} - currentEdge: {traci.vehicle.getRoadID(v)} - nextEdge: {ne}")
-            if traci.vehicle.getRoadID(v) == ne:
-                topology = getPlatoonTopology(v, ce, platoons)
+        for v, current_lane, next_edge in last_members[:]:    # Iterate over a copy of the list
+            print(f"vehicle: {v} - currentEdge: {traci.vehicle.getRoadID(v)} - nextEdge: {next_edge}")
+            if traci.vehicle.getRoadID(v) == next_edge:
+                topology = getPlatoonTopology(v, current_lane, platoons)
                 PlatoonManager.free_platoon(topology, plexe)
-                last_members.remove((v, ce, ne))
+                last_members.remove((v, current_lane, next_edge))
+                # remove topology from platoons dict
+                platoons[current_lane].remove(topology)
         
         for junction in all_junctions:
             controlled_lanes = traci.trafficlight.getControlledLanes(junction)
@@ -64,22 +66,25 @@ if __name__ == "__main__":
                     print(f"vehicle: {vids[i]} -  position {traci.vehicle.getLanePosition(vids[i])} - length {traci.vehicle.getLength(vids[i])}")
                     ti = getPlatoonTopology(vids[i], traci.vehicle.getLaneID(vids[i]), platoons)
                     if not ti:
-                        if (i+1 < len(vids) 
-                            and traci.vehicle.getLanePosition(vids[i+1]) - traci.vehicle.getLength(vids[i+1]) - traci.vehicle.getLanePosition(vids[i]) <= PlatoonManager.DISTANCE
-                            and getNextEdge(vids[i]) == getNextEdge(vids[i+1])):
-                            tnext = getPlatoonTopology(vids[i+1], traci.vehicle.getLaneID(vids[i+1]), platoons)
-                            PlatoonManager.add_vehicle(tnext if tnext else None, vids[i], vids[i+1], plexe)
+                        if traci.vehicle.getLeader(vids[i]):
+                            fid, dist = traci.vehicle.getLeader(vids[i])
+                        else:
+                            fid, dist = (None, 0)
+                        if (fid and dist <= PlatoonManager.DISTANCE and traci.vehicle.getWaitingTime(vids[i]) > 0
+                            and getNextEdge(vids[i]) == getNextEdge(fid)):
+                            tnext = getPlatoonTopology(fid, traci.vehicle.getLaneID(fid), platoons)
+                            PlatoonManager.add_vehicle(tnext if tnext else None, vids[i], fid, plexe)
                             for v, ce, ne in last_members:
-                                if v == vids[i+1]:
+                                if v == fid:
                                     last_members.remove((v, ce, ne))
                                     last_members.append((vids[i], traci.vehicle.getLaneID(vids[i]), getNextEdge(vids[i])))
                         
                         lid = vids[i]
                         j = i - 1
-                        next_edg = getNextEdge(lid)
-                        print(f"vehicle: {lid} -  next_edg {next_edg}")
+                        next_edge = getNextEdge(lid)
+                        print(f"vehicle: {lid} -  next_edg {next_edge}")
                         members = []
-                        while (j >= 0 and next_edg == getNextEdge(vids[j]) 
+                        while (j >= 0 and next_edge == getNextEdge(vids[j]) 
                                and traci.vehicle.getLanePosition(vids[j+1]) - traci.vehicle.getLength(vids[j+1]) - traci.vehicle.getLanePosition(vids[j]) <= PlatoonManager.DISTANCE):
                             members.append(vids[j])
                             j -= 1

@@ -6,7 +6,7 @@ from plexe import Plexe, CACC, DRIVER, ACC
 
 class PlatoonManager:
     # inter-vehicle distance
-    DISTANCE = 5
+    DISTANCE = 1.5
     
     @classmethod
     def create_platoon(cls, lid: str, vids: list[str], plexe: Plexe) -> dict[str, dict[str, str]]:
@@ -26,7 +26,7 @@ class PlatoonManager:
         traci.vehicle.setSpeedMode(lid, 31)
         color = tuple(random.randint(0, 254) for x in range(3)) + (255,)
         traci.vehicle.setColor(lid, color=color)
-        plexe.set_active_controller(lid, ACC)
+        plexe.set_active_controller(lid, DRIVER)
         topology = {}
         topology[lid] = {"front" : None, "leader" : lid}
         for i in range(len(vids)):
@@ -96,6 +96,8 @@ class PlatoonManager:
         try:
             # get data about platoon leader
             ld = plexe.get_vehicle_data(v["leader"])
+            ld.acceleration = traci.vehicle.getAcceleration(v["leader"])
+            ld.speed = traci.vehicle.getSpeed(v["leader"])
             print("leader vehicle data:")
             print(f"\tindex: {ld.index}")
             print(f"\tu: {ld.u}")
