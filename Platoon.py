@@ -42,7 +42,7 @@ class PlatoonManager:
     
     @classmethod
     def add_vehicle(cls, topology: Optional[dict[str, dict[str, str]]], vid: str, frontvid: str, 
-                    plexe: Plexe) -> None:
+                    plexe: Plexe) -> dict[str, dict[str, str]]:
         """
         Add a vehicle to an existing platoon.
 
@@ -52,7 +52,7 @@ class PlatoonManager:
             frontvid (str): new member's front vehicle id
             plexe (Plexe): API instance
         """
-        if not topology: return
+        if not topology: return cls.create_platoon(frontvid, [vid], plexe)
         lid = topology[frontvid]["leader"]
         traci.vehicle.setSpeedMode(vid, 0)
         traci.vehicle.setColor(vid, traci.vehicle.getColor(lid))
@@ -60,7 +60,7 @@ class PlatoonManager:
         plexe.set_path_cacc_parameters(vid, distance=cls.DISTANCE)
         topology[vid] = {"front" : frontvid, "leader" : lid}
         #plexe.enable_auto_feed(vid, True, lid, frontvid)
-        return
+        return None
         
     @classmethod
     def free_platoon(cls, topology: Optional[dict[str, dict[str, str]]], plexe: Plexe) -> None:
@@ -96,8 +96,8 @@ class PlatoonManager:
         try:
             # get data about platoon leader
             ld = plexe.get_vehicle_data(v["leader"])
-            ld.acceleration = traci.vehicle.getAcceleration(v["leader"])
-            ld.speed = traci.vehicle.getSpeed(v["leader"])
+            #ld.acceleration = traci.vehicle.getAcceleration(v["leader"])
+            #ld.speed = traci.vehicle.getSpeed(v["leader"])
             print("leader vehicle data:")
             print(f"\tindex: {ld.index}")
             print(f"\tu: {ld.u}")
