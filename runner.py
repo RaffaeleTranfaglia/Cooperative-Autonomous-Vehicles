@@ -45,7 +45,6 @@ if __name__ == "__main__":
     step = 0
     while step < STEPS:
         traci.simulationStep()
-        print("1")
         # check on last platoons members here
         for v, current_lane, next_edge in last_members[:]:    # Iterate over a copy of the list
             #print(f"vehicle: {v} - currentEdge: {traci.vehicle.getRoadID(v)} - nextEdge: {next_edge}")
@@ -55,7 +54,6 @@ if __name__ == "__main__":
                 last_members.remove((v, current_lane, next_edge))
                 # remove topology from platoons dict
                 platoons[current_lane].remove(topology)
-        print("2")
         
         for junction in all_junctions:
             controlled_lanes = traci.trafficlight.getControlledLanes(junction)
@@ -72,6 +70,7 @@ if __name__ == "__main__":
                             fid, dist = traci.vehicle.getLeader(vids[i])
                         else:
                             fid, dist = (None, 0)
+                        print(f"vid: {vids[i]} - fid: {fid} - dist: {dist}")
                         if (fid and dist <= PlatoonManager.DISTANCE and traci.vehicle.getWaitingTime(vids[i]) > 0
                             and getNextEdge(vids[i]) == getNextEdge(fid)):
                             tnext = getPlatoonTopology(fid, traci.vehicle.getLaneID(fid), platoons)

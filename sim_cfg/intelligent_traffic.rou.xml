@@ -1,9 +1,9 @@
 <routes>
 	<vType id="auto" accel="5" decel="10" sigma="0.0" length="4"
-		   minGap="2" maxSpeed="36" color="255,255,255" probability="1"
-		   carFollowModel="CC" tauEngine="0.5" omegaN="0.2" xi="1" c1="0.5"
-		   lanesCount="4" ccAccel="4" ploegKp="0.2" ploegKd="0.7"
-		   ploegH="0.5"/>
+		minGap="2" maxSpeed="36" color="255,255,255" probability="1"
+		carFollowModel="CC" tauEngine="0.5" omegaN="0.2" xi="1" c1="0.5"
+		lanesCount="4" ccAccel="4" ploegKp="0.2" ploegKd="0.7"
+		ploegH="0.5"/>
 
 	<route id="route_0" edges="end1_junction junction_end4"/>
 	<route id="route_1" edges="end1_junction junction_end3"/>

@@ -1,12 +1,11 @@
 import traci
 import random
-import math
 from typing import Optional
-from plexe import Plexe, CACC, DRIVER, ACC
+from plexe import Plexe, CACC, DRIVER
 
 class PlatoonManager:
     # inter-vehicle distance
-    DISTANCE = 1.5
+    DISTANCE = 0.5
     
     @classmethod
     def create_platoon(cls, lid: str, vids: list[str], plexe: Plexe) -> dict[str, dict[str, str]]:
@@ -27,6 +26,7 @@ class PlatoonManager:
         color = tuple(random.randint(0, 254) for x in range(3)) + (255,)
         traci.vehicle.setColor(lid, color=color)
         plexe.set_active_controller(lid, DRIVER)
+        plexe.use_controller_acceleration(lid, False)
         topology = {}
         topology[lid] = {"front" : None, "leader" : lid}
         for i in range(len(vids)):
@@ -35,6 +35,7 @@ class PlatoonManager:
             traci.vehicle.setSpeedMode(vid, 0)
             traci.vehicle.setColor(vid, traci.vehicle.getColor(lid))
             plexe.set_active_controller(vid, CACC)
+            plexe.use_controller_acceleration(vid, False)
             plexe.set_path_cacc_parameters(vid, distance=cls.DISTANCE)
             topology[vid] = {"front" : frontvid, "leader" : lid}
             #plexe.enable_auto_feed(vid, True, lid, frontvid)
@@ -57,6 +58,7 @@ class PlatoonManager:
         traci.vehicle.setSpeedMode(vid, 0)
         traci.vehicle.setColor(vid, traci.vehicle.getColor(lid))
         plexe.set_active_controller(vid, CACC)
+        plexe.use_controller_acceleration(vid, False)
         plexe.set_path_cacc_parameters(vid, distance=cls.DISTANCE)
         topology[vid] = {"front" : frontvid, "leader" : lid}
         #plexe.enable_auto_feed(vid, True, lid, frontvid)
@@ -96,8 +98,6 @@ class PlatoonManager:
         try:
             # get data about platoon leader
             ld = plexe.get_vehicle_data(v["leader"])
-            #ld.acceleration = traci.vehicle.getAcceleration(v["leader"])
-            #ld.speed = traci.vehicle.getSpeed(v["leader"])
             print("leader vehicle data:")
             print(f"\tindex: {ld.index}")
             print(f"\tu: {ld.u}")
