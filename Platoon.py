@@ -53,7 +53,6 @@ class PlatoonManager:
             frontvid (str): new member's front vehicle id
             plexe (Plexe): API instance
         """
-        if not topology: return cls.create_platoon(frontvid, [vid], plexe)
         lid = topology[frontvid]["leader"]
         traci.vehicle.setSpeedMode(vid, 0)
         traci.vehicle.setColor(vid, traci.vehicle.getColor(lid))
