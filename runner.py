@@ -33,11 +33,13 @@ def free_platoons():
         if traci.vehicle.getRoadID(v) != next_edge:
             continue
         
-        topology = getPlatoonTopology(v, current_lane, platoons)
+        #topology = getPlatoonTopology(v, current_lane, platoons)
+        topology = platoons[current_lane]
         PlatoonManager.free_platoon(topology, plexe)
         last_members.remove((v, current_lane, next_edge))
         # remove topology from platoons dict
-        platoons[current_lane].remove(topology)
+        #platoons[current_lane].remove(topology)
+        del platoons[current_lane]
         
 def simulate_communication(lane):
     for topology in platoons[lane]: 
@@ -170,6 +172,9 @@ if __name__ == "__main__":
         free_platoons()
         
         iterate_on_tls_junctions(all_junctions)
+        
+        for lane in platoons:
+            PlatoonManager.communicate(platoons[lane], plexe)
         
         traci.simulationStep()
         step += 0.1

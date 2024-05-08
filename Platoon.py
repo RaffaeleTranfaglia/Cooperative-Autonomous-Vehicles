@@ -5,7 +5,7 @@ from plexe import Plexe, CACC, ACC, DRIVER
 
 class PlatoonManager:
     # inter-vehicle distance
-    DISTANCE = 0.5
+    DISTANCE = 2
     
     @classmethod
     def create_platoon(cls, vids: list[str], plexe: Plexe) -> dict[str, dict[str, str]]:
@@ -25,17 +25,18 @@ class PlatoonManager:
         traci.vehicle.setSpeedMode(lid, 31)
         color = tuple(random.randint(0, 254) for x in range(3)) + (255,)
         traci.vehicle.setColor(lid, color=color)
-        plexe.set_active_controller(lid, ACC)
-        plexe.use_controller_acceleration(lid, True)
+        plexe.set_active_controller(lid, DRIVER)
+        plexe.use_controller_acceleration(lid, False)
         topology = {}
         topology[lid] = {"front" : None, "leader" : lid}
         for i in range(1, len(vids)):
             vid = vids[i]
-            frontvid = vids[i-1] if i-1>=0 else lid
+            traci.vehicle.setMinGap(vid, 0)
+            frontvid = vids[i-1]
             traci.vehicle.setSpeedMode(vid, 0)
             traci.vehicle.setColor(vid, traci.vehicle.getColor(lid))
             plexe.set_active_controller(vid, CACC)
-            plexe.use_controller_acceleration(vid, True)
+            plexe.use_controller_acceleration(vid, False)
             plexe.set_path_cacc_parameters(vid, distance=cls.DISTANCE)
             topology[vid] = {"front" : frontvid, "leader" : lid}
             #plexe.enable_auto_feed(vid, True, lid, frontvid)
@@ -81,6 +82,7 @@ class PlatoonManager:
             traci.vehicle.setColor(vid, (255,255,255,255))
             plexe.use_controller_acceleration(vid, False)
             plexe.set_active_controller(vid, DRIVER)
+            traci.vehicle.setMinGap(vid, 2)
             #plexe.enable_auto_feed(vid, False)
             
     @classmethod
