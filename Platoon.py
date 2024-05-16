@@ -5,7 +5,7 @@ from plexe import Plexe, CACC, ACC, DRIVER
 
 class PlatoonManager:
     # inter-vehicle distance
-    DISTANCE = 2
+    DISTANCE = 3
     
     @classmethod
     def create_platoon(cls, vids: list[str], plexe: Plexe) -> dict[str, dict[str, str]]:
@@ -27,6 +27,7 @@ class PlatoonManager:
         traci.vehicle.setColor(lid, color=color)
         plexe.set_active_controller(lid, DRIVER)
         plexe.use_controller_acceleration(lid, False)
+        cls.add_platooning_vehicle(plexe, lid, 0, 0, 0, cls.DISTANCE, color)
         topology = {}
         topology[lid] = {"front" : None, "leader" : lid}
         for i in range(1, len(vids)):
@@ -36,35 +37,59 @@ class PlatoonManager:
             traci.vehicle.setSpeedMode(vid, 0)
             traci.vehicle.setColor(vid, traci.vehicle.getColor(lid))
             plexe.set_active_controller(vid, CACC)
-            plexe.use_controller_acceleration(vid, False)
-            plexe.set_path_cacc_parameters(vid, distance=cls.DISTANCE)
             topology[vid] = {"front" : frontvid, "leader" : lid}
+            plexe.add_member(lid, vid, i)
+            plexe.use_controller_acceleration(vid, False)
+            cls.add_platooning_vehicle(plexe, vid, 0, 0, 0, cls.DISTANCE, color)
+            #plexe.set_path_cacc_parameters(vid, distance=cls.DISTANCE)
             #plexe.enable_auto_feed(vid, True, lid, frontvid)
         return topology
     
     '''
-    @classmethod
-    def add_vehicle(cls, topology: Optional[dict[str, dict[str, str]]], vid: str, frontvid: str, 
-                    plexe: Plexe) -> dict[str, dict[str, str]]:
-        """
-        Add a vehicle to an existing platoon.
-
-        Args:
-            topology (dict[str, dict[str, str]]): topology of the platoon
-            vid (str): new member id
-            frontvid (str): new member's front vehicle id
-            plexe (Plexe): API instance
-        """
-        lid = topology[frontvid]["leader"]
-        traci.vehicle.setSpeedMode(vid, 0)
-        traci.vehicle.setColor(vid, traci.vehicle.getColor(lid))
-        plexe.set_active_controller(vid, CACC)
-        plexe.use_controller_acceleration(vid, True)
-        plexe.set_path_cacc_parameters(vid, distance=cls.DISTANCE)
-        topology[vid] = {"front" : frontvid, "leader" : lid}
-        #plexe.enable_auto_feed(vid, True, lid, frontvid)
-        return None
+    topology = {}
+    p_length = n * LENGTH + (n - 1) * DISTANCE
+    for p in range(n_platoons):
+        for i in range(n):
+            vid = "v.%d.%d" % (p, i)
+            add_platooning_vehicle(plexe, vid, (n-p+1) *
+                                   (p_length + PLATOON_DISTANCE) + (n-i+1) *
+                                   (DISTANCE+LENGTH), 0, SPEED, DISTANCE,
+                                   real_engine)
+            plexe.set_fixed_lane(vid, 0, False)
+            traci.vehicle.setSpeedMode(vid, 0)
+            plexe.use_controller_acceleration(vid, False)
+            if i == 0:
+                plexe.set_active_controller(vid, DRIVER)
+            else:
+                plexe.set_active_controller(vid, CACC)
+            if i > 0:
+                topology[vid] = {"front": "v.%d.%d" % (p, i - 1),
+                                 "leader": "v.%d.0" % p}
+            else:
+                topology[vid] = {}
+    return topology
     '''
+    
+    @classmethod
+    def add_platooning_vehicle(cls, plexe: Plexe, vid, position, lane, speed, cacc_spacing, 
+                               color, vtype="vtypeauto"):
+        """
+        Adds a vehicle to the simulation
+        :param plexe: API instance
+        :param vid: vehicle id to be set
+        :param position: position of the vehicle
+        :param lane: lane
+        :param speed: starting speed
+        :param cacc_spacing: spacing to be set for the CACC
+        :param real_engine: use the realistic engine model or the first order lag
+        model
+        """
+        #cls.add_vehicle(plexe, vid, position, lane, speed, vtype)
+
+        plexe.set_path_cacc_parameters(vid, cacc_spacing, 2, 1, 0.5)
+        #plexe.set_cc_desired_speed(vid, speed)
+        plexe.set_acc_headway_time(vid, 1.5)
+        traci.vehicle.setColor(vid, color)
         
     @classmethod
     def free_platoon(cls, topology: Optional[dict[str, dict[str, str]]], plexe: Plexe) -> None:

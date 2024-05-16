@@ -1,9 +1,16 @@
 <routes>
-	<vType id="auto" accel="2.5" decel="10" sigma="0.0" length="4"
+	<!-- <vType id="auto" accel="5" decel="10" sigma="0" length="4"
 		minGap="2" maxSpeed="36" color="255,255,255" probability="1"
 		carFollowModel="CC" tauEngine="0.5" omegaN="0.2" xi="1" c1="0.5"
 		lanesCount="4" ccAccel="4" ploegKp="0.2" ploegKd="0.7"
-		ploegH="0.5"/>
+		ploegH="0.5"/> -->
+
+	<vType id="vtypeauto" accel="2.5" decel="8" sigma="0" length="4" tau="3.0"
+		   minGap="2" maxSpeed="33.33" color="255,255,255" probability="1"
+		   carFollowModel="CC" tauEngine="0.5" omegaN="0.2" xi="1" c1="0.5"
+		   lanesCount="4" ccAccel="1.5" ploegKp="0.2" ploegKd="0.7"
+		   ploegH="0.5" speedFactor="2" laneChangeModel="LC2013_CC"
+		   lcStrategic="5" lcCooperative="5" lcSpeedGain="5" lcKeepRight="5"/>
 
 	<route id="route_0" edges="end1_junction junction_end4"/>
 	<route id="route_1" edges="end1_junction junction_end3"/>
@@ -21,9 +28,9 @@
 	<route id="route_10" edges="end4_junction junction_end2"/>
 	<route id="route_11" edges="end4_junction junction_end1"/>
 
-	<flow id="flow0" begin="0" end="500" period="1" type="auto" route="route_0"> </flow>
-	<flow id="flow1" begin="0" end="500" period="1" type="auto" route="route_1"> </flow>
-	<flow id="flow2" begin="0" end="500" period="1" type="auto" route="route_2"> </flow>
+	<flow id="flow0" begin="0" end="500" period="1" type="vtypeauto" route="route_0"> </flow>
+	<flow id="flow1" begin="0" end="500" period="1" type="vtypeauto" route="route_1"> </flow>
+	<flow id="flow2" begin="0" end="500" period="1" type="vtypeauto" route="route_2"> </flow>
 
 	<!-- 
 	<flow id="flow3" begin="0" end="500" period="10" type="auto" route="route_3"> </flow>

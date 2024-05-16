@@ -44,44 +44,6 @@ def free_platoons():
 def simulate_communication(lane):
     for topology in platoons[lane]: 
         PlatoonManager.communicate(topology, plexe)
-        
-'''
-def iterate_on_controlled_lanes(controlled_lanes):
-    for lane in controlled_lanes:
-        if lane not in platoons:
-            platoons[lane] = []
-        vids = traci.lane.getLastStepVehicleIDs(lane)
-        i = len(vids) - 1
-        while i >= 0:
-            ti = getPlatoonTopology(vids[i], traci.vehicle.getLaneID(vids[i]), platoons)
-            if not ti:
-                if traci.vehicle.getLeader(vids[i]):
-                    fid, dist = traci.vehicle.getLeader(vids[i])
-                else:
-                    fid, dist = (None, 0)
-                
-                if (fid and dist <= PlatoonManager.DISTANCE and traci.vehicle.getWaitingTime(vids[i]) > 0
-                    and getNextEdge(vids[i]) == getNextEdge(fid)):
-                    # get the topology of the front vechicle
-                    tfront = getPlatoonTopology(fid, traci.vehicle.getLaneID(fid), platoons)
-                    if not tfront:
-                        topology = PlatoonManager.create_platoon(fid, [vids[i]], plexe)
-                        platoons[lane].append(topology)
-                    elif len(tfront) >= 10:
-                        topology = PlatoonManager.create_platoon(vids[i], [], plexe)
-                        platoons[lane].append(topology)
-                    else:
-                        topology = PlatoonManager.add_vehicle(tfront, vids[i], fid, plexe)
-                        for v, current_lane, next_edge in last_members:
-                            if v == fid:
-                                last_members.remove((v, current_lane, next_edge))
-                    
-                    last_members.append((vids[i], traci.vehicle.getLaneID(vids[i]), getNextEdge(vids[i])))
-            i -= 1
-            
-        # simulate vehicle communication every step
-        simulate_communication(lane)
-'''
 
 def getLaneAvailableSpace(lane):
     lane_length = traci.lane.getLength(lane)
@@ -148,6 +110,13 @@ def initialize_tls_phases(tls_state, all_junctions):
             tls_state[junction][lane] = state[i]
         
 
+def distance_intra_platoon(topology):
+    for vid in topology:
+        front, distance = traci.vehicle.getLeader(vid)
+        print(vid + " " + front)
+        print(f"Distance: {distance}")
+        
+
 if __name__ == "__main__":
     sumoCmd = ["sumo-gui", "--step-length", "0.1",
            "--tripinfo-output", os.path.join("sim_cfg", "tripinfo.xml"),
@@ -162,6 +131,7 @@ if __name__ == "__main__":
     plexe = Plexe()
     traci.addStepListener(plexe)
     
+    # needed to GetLeader method to retrieve ('id', -1) when there is not a vehicle ahead
     traci.setLegacyGetLeader(False)
     
     initialize_tls_phases(tls_state, all_junctions)
@@ -170,6 +140,9 @@ if __name__ == "__main__":
     while step < STEPS:
         # check on last platoons members
         free_platoons()
+        
+        for lane in platoons:
+            distance_intra_platoon(platoons[lane])
         
         iterate_on_tls_junctions(all_junctions)
         
