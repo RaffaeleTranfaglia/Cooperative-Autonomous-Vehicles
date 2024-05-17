@@ -1,7 +1,7 @@
 import os
 import sys
 import traci
-from plexe import Plexe
+from plexe import Plexe, RADAR_DISTANCE, RADAR_REL_SPEED
 from Platoon import PlatoonManager
 
 if "SUMO_HOME" in os.environ:
@@ -11,6 +11,7 @@ else:
     sys.exit("Environment variable 'SUMO_HOME' not defined.")
     
 STEPS = 500
+MIN_GAP = 2
 
 def getPlatoonTopology(vid, laneid, platoons):
     for topology in platoons.get(laneid, list()):
@@ -127,6 +128,8 @@ if __name__ == "__main__":
     last_members = []
     tls_state = {}
     all_junctions = traci.trafficlight.getIDList()
+    out = open(os.path.join("sim_cfg", "log.csv"), "w")
+    out.write("nodeId,time,distance,relativeSpeed,speed,acceleration,controllerAcceleration\n")
     
     plexe = Plexe()
     traci.addStepListener(plexe)
@@ -148,9 +151,21 @@ if __name__ == "__main__":
         
         for lane in platoons:
             PlatoonManager.communicate(platoons[lane], plexe)
-        
+            
+            for v in platoons[lane]:
+                if v == platoons[lane][v]["leader"]:
+                    distance = -1
+                    rel_speed = 0
+                else:
+                    radar = plexe.get_radar_data(v)
+                    distance = radar[RADAR_DISTANCE]
+                    rel_speed = radar[RADAR_REL_SPEED]
+                acc = traci.vehicle.getAcceleration(v)
+                out.write(f"{v},{step},{distance},{rel_speed},{traci.vehicle.getSpeed(v)},{acc},{acc}\n")
+    
         traci.simulationStep()
         step += 0.1
-                        
+             
+    out.close()           
     traci.close()
     sys.stdout.flush()

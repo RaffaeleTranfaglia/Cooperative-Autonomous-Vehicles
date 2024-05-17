@@ -45,31 +45,6 @@ class PlatoonManager:
             #plexe.enable_auto_feed(vid, True, lid, frontvid)
         return topology
     
-    '''
-    topology = {}
-    p_length = n * LENGTH + (n - 1) * DISTANCE
-    for p in range(n_platoons):
-        for i in range(n):
-            vid = "v.%d.%d" % (p, i)
-            add_platooning_vehicle(plexe, vid, (n-p+1) *
-                                   (p_length + PLATOON_DISTANCE) + (n-i+1) *
-                                   (DISTANCE+LENGTH), 0, SPEED, DISTANCE,
-                                   real_engine)
-            plexe.set_fixed_lane(vid, 0, False)
-            traci.vehicle.setSpeedMode(vid, 0)
-            plexe.use_controller_acceleration(vid, False)
-            if i == 0:
-                plexe.set_active_controller(vid, DRIVER)
-            else:
-                plexe.set_active_controller(vid, CACC)
-            if i > 0:
-                topology[vid] = {"front": "v.%d.%d" % (p, i - 1),
-                                 "leader": "v.%d.0" % p}
-            else:
-                topology[vid] = {}
-    return topology
-    '''
-    
     @classmethod
     def add_platooning_vehicle(cls, plexe: Plexe, vid, position, lane, speed, cacc_spacing, 
                                color, vtype="vtypeauto"):
@@ -107,7 +82,7 @@ class PlatoonManager:
             traci.vehicle.setColor(vid, (255,255,255,255))
             plexe.use_controller_acceleration(vid, False)
             plexe.set_active_controller(vid, DRIVER)
-            traci.vehicle.setMinGap(vid, 2)
+            traci.vehicle.setMinGap(vid, 1.8)
             #plexe.enable_auto_feed(vid, False)
             
     @classmethod
