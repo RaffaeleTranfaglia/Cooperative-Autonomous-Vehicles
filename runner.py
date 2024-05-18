@@ -128,7 +128,7 @@ if __name__ == "__main__":
     last_members = []
     tls_state = {}
     all_junctions = traci.trafficlight.getIDList()
-    out = open(os.path.join("sim_cfg", "log.csv"), "w")
+    out = open(os.path.join("sim_benchmarks", "log.csv"), "w")
     out.write("nodeId,time,distance,relativeSpeed,speed,acceleration,controllerAcceleration\n")
     
     plexe = Plexe()
