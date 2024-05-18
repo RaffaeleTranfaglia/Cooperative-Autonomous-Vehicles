@@ -25,7 +25,7 @@ class PlatoonBenchmarksPlotter:
         plt.grid(True)
         plt.xticks(rotation=45)
         plt.tight_layout()
-        plt.legend(loc='upper left')
+        plt.legend()
 
         # Show the plot
         plt.show()
@@ -38,15 +38,28 @@ df = pd.read_csv(os.path.join("sim_benchmarks", "log_platoon_2.csv"))
 grouped_df = df.groupby('nodeId')
 map(lambda x: x*3.6, grouped_df['speed'])
 
-speed_plotter = PlatoonBenchmarksPlotter(grouped_df, 'time', 'speed', 'Time [s]', 'Speed [Km/h]', 
-                                         'Speed over time of platoon members')
-speed_plotter.plot()
-
 for vid, group in grouped_df:
     print(vid)
     print(group)
 
-distance_plotter = PlatoonBenchmarksPlotter(grouped_df, 
-                                            'time', 'distance', 'Time [s]', 'Distance [m]', 
+'''
+# Plot speed graph
+speed_plotter = PlatoonBenchmarksPlotter(grouped_df, 'time', 'speed', 'Time [s]', 'Speed [Km/h]', 
+                                         'Speed over time of platoon members')
+speed_plotter.plot()
+
+
+# Plot distance graph
+filtered_df= grouped_df.filter(lambda x: (x['distance'] != -1).all())
+grouped_filtered_df = filtered_df.groupby('nodeId')
+
+distance_plotter = PlatoonBenchmarksPlotter(grouped_filtered_df, 'time', 'distance', 'Time [s]', 'Distance [m]', 
                                             'Platoon Inter-vehicle distance')
 distance_plotter.plot()
+'''
+
+# Plot acceleration graph
+acceleration_plotter = PlatoonBenchmarksPlotter(grouped_df, 'time', 'acceleration', 'Time [s]', 
+                                                'Acceleration [m/(s**2)]', 
+                                                "Acceleration over time of platoon members")
+acceleration_plotter.plot()
