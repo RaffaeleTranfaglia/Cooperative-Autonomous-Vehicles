@@ -18,19 +18,20 @@ if __name__ == "__main__":
     total_waiting_time_1 = 0
     for tripinfo1 in tripinfos1:
         total_waiting_time_1 += float(tripinfo1.get("waitingTime"))
-        print(tripinfo1.get("waitingTime"))
+        #print(tripinfo1.get("waitingTime"))
         
     print(len(tripinfos2))
     total_waiting_time_2 = 0
     for tripinfo2 in tripinfos2:
         total_waiting_time_2 += float(tripinfo2.get("waitingTime"))
-        print(tripinfo2.get("waitingTime"))
+        #print(tripinfo2.get("waitingTime"))
         
     print(f"Total waiting time using platooning strategy: {total_waiting_time_1}")
     print(f"Total waiting time: {total_waiting_time_2}")
     
     #import numpy as np
     #loss = 0
+    '''
     b=[]
     for child in root1:
         a = float(child.attrib['timeLoss'])
@@ -65,3 +66,4 @@ if __name__ == "__main__":
     ave_v = sum_v / len(root1)
     print('ave_v is', ave_v)
     print('%.2f'%ave_v)
+    '''

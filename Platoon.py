@@ -27,7 +27,9 @@ class PlatoonManager:
         traci.vehicle.setColor(lid, color=color)
         plexe.set_active_controller(lid, DRIVER)
         plexe.use_controller_acceleration(lid, False)
-        cls.add_platooning_vehicle(plexe, lid, 0, 0, 0, cls.DISTANCE, color)
+        #cls.add_platooning_vehicle(plexe, lid, 0, 0, 0, cls.DISTANCE, color)
+        plexe.set_path_cacc_parameters(vid, cls.DISTANCE, 2, 1, 0.5)
+        plexe.set_acc_headway_time(lid, 1.5)
         topology = {}
         topology[lid] = {"front" : None, "leader" : lid}
         for i in range(1, len(vids)):
@@ -35,13 +37,14 @@ class PlatoonManager:
             traci.vehicle.setMinGap(vid, 0)
             frontvid = vids[i-1]
             traci.vehicle.setSpeedMode(vid, 0)
-            traci.vehicle.setColor(vid, traci.vehicle.getColor(lid))
+            traci.vehicle.setColor(vid, color)
             plexe.set_active_controller(vid, CACC)
             topology[vid] = {"front" : frontvid, "leader" : lid}
             plexe.add_member(lid, vid, i)
             plexe.use_controller_acceleration(vid, False)
-            cls.add_platooning_vehicle(plexe, vid, 0, 0, 0, cls.DISTANCE, color)
-            #plexe.set_path_cacc_parameters(vid, distance=cls.DISTANCE)
+            #cls.add_platooning_vehicle(plexe, vid, 0, 0, 0, cls.DISTANCE, color)
+            plexe.set_path_cacc_parameters(vid, cls.DISTANCE, 2, 1, 0.5)
+            plexe.set_acc_headway_time(vid, 1.5)
             #plexe.enable_auto_feed(vid, True, lid, frontvid)
         return topology
     
@@ -64,7 +67,7 @@ class PlatoonManager:
         plexe.set_path_cacc_parameters(vid, cacc_spacing, 2, 1, 0.5)
         #plexe.set_cc_desired_speed(vid, speed)
         plexe.set_acc_headway_time(vid, 1.5)
-        traci.vehicle.setColor(vid, color)
+        #traci.vehicle.setColor(vid, color)
         
     @classmethod
     def free_platoon(cls, topology: Optional[dict[str, dict[str, str]]], plexe: Plexe) -> None:
@@ -76,7 +79,7 @@ class PlatoonManager:
             plexe (Plexe): API instance
         """
         if not topology: return
-        print(f"Freeing a platoon composed of {topology.keys}")
+        print(f"Freeing a platoon composed of {topology}")
         for vid in topology:
             traci.vehicle.setSpeedMode(vid, 31)
             traci.vehicle.setColor(vid, (255,255,255,255))

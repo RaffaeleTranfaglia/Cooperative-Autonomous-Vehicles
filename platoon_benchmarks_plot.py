@@ -42,7 +42,6 @@ for vid, group in grouped_df:
     print(vid)
     print(group)
 
-'''
 # Plot speed graph
 speed_plotter = PlatoonBenchmarksPlotter(grouped_df, 'time', 'speed', 'Time [s]', 'Speed [Km/h]', 
                                          'Speed over time of platoon members')
@@ -56,7 +55,6 @@ grouped_filtered_df = filtered_df.groupby('nodeId')
 distance_plotter = PlatoonBenchmarksPlotter(grouped_filtered_df, 'time', 'distance', 'Time [s]', 'Distance [m]', 
                                             'Platoon Inter-vehicle distance')
 distance_plotter.plot()
-'''
 
 # Plot acceleration graph
 acceleration_plotter = PlatoonBenchmarksPlotter(grouped_df, 'time', 'acceleration', 'Time [s]', 
