@@ -122,8 +122,8 @@
         <param key="max-gap" value="5.0"/>
         <param key="detector-gap" value="2.0"/>
         <param key="show-detectors" value="true"/>
-        <param key="file" value="NULL"/>
-        <param key="freq" value="300"/>
+        <param key="freq" value="500"/>
+        <param key="file" value="junction.xml"/>
         <phase duration="30" minDur="5" maxDur="45" state="GGrGrrGGrGrr"/>
         <phase duration="5"  minDur="5" maxDur="5" state="gyrgrrgyrgrr"/>
         <phase duration="20" minDur="5" maxDur="45" state="grGgrrgrGgrr"/>

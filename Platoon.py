@@ -18,7 +18,7 @@ class PlatoonManager:
 
         Returns:
             dict[str, dict[str, str]]: the topology of the platoon, i.e., a dictionary which
-            indicates, for each vehicle, who is its leader and who is its front vehicle.
+            indicates, for each vehicle, who is its leader and its front vehicle.
         """
         lid = vids[0]
         print(f"Creating a platoon composed of {lid} {vids}")
@@ -27,8 +27,7 @@ class PlatoonManager:
         traci.vehicle.setColor(lid, color=color)
         plexe.set_active_controller(lid, DRIVER)
         plexe.use_controller_acceleration(lid, False)
-        #cls.add_platooning_vehicle(plexe, lid, 0, 0, 0, cls.DISTANCE, color)
-        plexe.set_path_cacc_parameters(vid, cls.DISTANCE, 2, 1, 0.5)
+        plexe.set_path_cacc_parameters(lid, cls.DISTANCE, 2, 1, 0.5)
         plexe.set_acc_headway_time(lid, 1.5)
         topology = {}
         topology[lid] = {"front" : None, "leader" : lid}
@@ -40,14 +39,13 @@ class PlatoonManager:
             traci.vehicle.setColor(vid, color)
             plexe.set_active_controller(vid, CACC)
             topology[vid] = {"front" : frontvid, "leader" : lid}
-            plexe.add_member(lid, vid, i)
+            #plexe.add_member(lid, vid, i)
             plexe.use_controller_acceleration(vid, False)
-            #cls.add_platooning_vehicle(plexe, vid, 0, 0, 0, cls.DISTANCE, color)
             plexe.set_path_cacc_parameters(vid, cls.DISTANCE, 2, 1, 0.5)
             plexe.set_acc_headway_time(vid, 1.5)
-            #plexe.enable_auto_feed(vid, True, lid, frontvid)
         return topology
     
+    '''
     @classmethod
     def add_platooning_vehicle(cls, plexe: Plexe, vid, position, lane, speed, cacc_spacing, 
                                color, vtype="vtypeauto"):
@@ -68,9 +66,10 @@ class PlatoonManager:
         #plexe.set_cc_desired_speed(vid, speed)
         plexe.set_acc_headway_time(vid, 1.5)
         #traci.vehicle.setColor(vid, color)
+    '''
         
     @classmethod
-    def free_platoon(cls, topology: Optional[dict[str, dict[str, str]]], plexe: Plexe) -> None:
+    def clear_platoon(cls, topology: Optional[dict[str, dict[str, str]]], plexe: Plexe) -> None:
         """
         Disassemble a platoon.
 
@@ -83,25 +82,29 @@ class PlatoonManager:
         for vid in topology:
             traci.vehicle.setSpeedMode(vid, 31)
             traci.vehicle.setColor(vid, (255,255,255,255))
-            plexe.use_controller_acceleration(vid, False)
             plexe.set_active_controller(vid, DRIVER)
             traci.vehicle.setMinGap(vid, 1.8)
-            #plexe.enable_auto_feed(vid, False)
             
     @classmethod
     def communicate(cls, topology: Optional[dict[str, dict[str, str]]], plexe: Plexe) -> None:
         """
         Performs data transfer between vehicles, i.e., fetching data from
-        leading and front vehicles to feed the CACC algorithm
-        :param plexe: API instance
-        :param topology: a dictionary pointing each vehicle id to its front
-        vehicle and platoon leader. each entry of the dictionary is a dictionary
-        which includes the keys "leader" and "front"
+        leading and front vehicles to feed the CACC algorithm.
+        
+        Args:
+            plexe (Plexe): API instance
+            topology (dict[str, dict[str, str]]): a dictionary pointing each vehicle id to its front
+            vehicle and platoon leader. Each entry of the dictionary is a dictionary
+            which includes the keys "leader" and "front".
         """
         if not topology:
             return
         
-        k, v = next(iter(topology.items()))
+        '''
+        Access to the dictionary associated to the first topology element in order to get 
+        the leader id through the "leader" key.
+        '''
+        v = next(iter(topology.items()))[1]
         try:
             # get data about platoon leader
             ld = plexe.get_vehicle_data(v["leader"])

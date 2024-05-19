@@ -28,7 +28,6 @@
 	<route id="route_10" edges="end4_junction junction_end2"/>
 	<route id="route_11" edges="end4_junction junction_end1"/>
 
-	<!--
 	<flow id="flow0" begin="0" end="500" period="1" type="vtypeauto" route="route_0"> </flow>
 	<flow id="flow1" begin="0" end="500" period="1" type="vtypeauto" route="route_1"> </flow>
 	<flow id="flow2" begin="0" end="500" period="1" type="vtypeauto" route="route_2"> </flow>
@@ -41,8 +40,9 @@
 	<flow id="flow9" begin="0" end="500" period="1" type="vtypeauto" route="route_9"> </flow> 
 	<flow id="flow10" begin="0" end="500" period="1" type="vtypeauto" route="route_10"> </flow> 
 	<flow id="flow11" begin="0" end="500" period="1" type="vtypeauto" route="route_11"> </flow> 
-	-->
 
+	<!--
 	<flow id="flow0" begin="0" end="500" period="exp(0.5)" type="vtypeauto" route="route_0"></flow>
+	-->
 	
 </routes>
