@@ -44,29 +44,6 @@ class PlatoonManager:
             plexe.set_path_cacc_parameters(vid, cls.DISTANCE, 2, 1, 0.5)
             plexe.set_acc_headway_time(vid, 1.5)
         return topology
-    
-    '''
-    @classmethod
-    def add_platooning_vehicle(cls, plexe: Plexe, vid, position, lane, speed, cacc_spacing, 
-                               color, vtype="vtypeauto"):
-        """
-        Adds a vehicle to the simulation
-        :param plexe: API instance
-        :param vid: vehicle id to be set
-        :param position: position of the vehicle
-        :param lane: lane
-        :param speed: starting speed
-        :param cacc_spacing: spacing to be set for the CACC
-        :param real_engine: use the realistic engine model or the first order lag
-        model
-        """
-        #cls.add_vehicle(plexe, vid, position, lane, speed, vtype)
-
-        plexe.set_path_cacc_parameters(vid, cacc_spacing, 2, 1, 0.5)
-        #plexe.set_cc_desired_speed(vid, speed)
-        plexe.set_acc_headway_time(vid, 1.5)
-        #traci.vehicle.setColor(vid, color)
-    '''
         
     @classmethod
     def clear_platoon(cls, topology: Optional[dict[str, dict[str, str]]], plexe: Plexe) -> None:
