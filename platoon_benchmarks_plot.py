@@ -32,7 +32,7 @@ class PlatoonBenchmarksPlotter:
 
         
 # Read the CSV file into a DataFrame
-df = pd.read_csv(os.path.join("sim_benchmarks", "log_platoon_2.csv"))
+df = pd.read_csv(os.path.join("sim_benchmarks", "log_platoon_3.csv"))
 
 # Group the data by 'ID'
 grouped_df = df.groupby('nodeId')
