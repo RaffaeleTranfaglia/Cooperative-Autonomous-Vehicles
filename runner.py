@@ -1,6 +1,7 @@
 import os
 import sys
 import traci
+import sumolib
 from plexe import Plexe, RADAR_DISTANCE, RADAR_REL_SPEED
 from Platoon import PlatoonManager
 from typing import Optional
@@ -13,6 +14,7 @@ else:
     
 STEPS = 500
 MIN_GAP = 2
+
 
 def getNextEdge(vid: str) -> Optional[str]:
     """
@@ -33,6 +35,7 @@ def getNextEdge(vid: str) -> Optional[str]:
         i += 1
     return None
 
+
 def clear_platoons():
     """
     Check if there are any platoons that have crossed the intersection in order to clear them.
@@ -47,23 +50,29 @@ def clear_platoons():
         # remove topology from platoons dict
         del platoons[current_lane]
 
-def getLaneAvailableSpace(lane):
+
+def getLaneAvailableSpace(edge):
     """
-    The remaining available space (in meters) in the given lane.
+    The remaining available space (in meters) in the given edge.
+    The available space is computed for every lane in the edge and the returned value is the minor.
     It is computed by subtracting the space occupied by the vehicles currently in the lane from the lane length.
 
     Args:
-        lane (str): lane id
+        edge (str): edge id
 
     Returns:
         float: remaining available space in meters
     """
-    lane_length = traci.lane.getLength(lane)
-    vids = traci.lane.getLastStepVehicleIDs(lane)
-    occupied_space = 0
-    for vid in vids:
-        occupied_space = traci.vehicle.getLength(vid) + traci.vehicle.getMinGap(vid)
-    return lane_length - occupied_space
+
+    available_space = sys.float_info.max
+    for lane in net.getEdge(edge).getLanes():
+        lane_id = lane.getID()
+        lane_length = traci.lane.getLength(lane_id)
+        n_vids = traci.lane.getLastStepVehicleNumber(lane_id)
+        occupied_space = n_vids + n_vids * MIN_GAP
+        available_space = min(available_space, lane_length - occupied_space)
+    
+    return available_space
         
 
 def initialize_tls_phases(tls_state, all_junctions):
@@ -94,19 +103,26 @@ def iterate_on_controlled_lanes(controlled_lanes, state, new_state):
         with its traffic light state in the current step
     """
     for lane in controlled_lanes:
+        print(f"lane = {lane}")
+        print(f"\tstate = {state[lane]}")
+        print(f"\tnew state = {new_state[lane]}")
         if state[lane] != 'r' or new_state[lane] != 'G':
             continue
         
-        next_lane_space = getLaneAvailableSpace(lane)
+        print("it turned green")
+        
         platoon_length = 0
         vids = traci.lane.getLastStepVehicleIDs(lane)[::-1]
         print(vids)
         if len(vids) == 0:
             continue
+        next_lane_space = getLaneAvailableSpace(getNextEdge(vids[0]))
         platoon_members = []
-        for vid in vids:
+        i = 0
+        while i < len(vids):
+            vid = vids[i]
+            front_id = vids[i-1] if i > 0 else None
             platoon_length += traci.vehicle.getMinGap(vid) + traci.vehicle.getLength(vid)
-            front_id = traci.vehicle.getLeader(vid)[0]
             
             print(f"platoon_length: {platoon_length}")
             print(f"next_lane_space: {next_lane_space}")
@@ -120,11 +136,16 @@ def iterate_on_controlled_lanes(controlled_lanes, state, new_state):
             of the first vehicle (vids[0]) is set to zero. This is the reason why vid needs 
             to be different from vids[0] when checking the waitingTime.
             '''
+            #TOBEFIXED check the following if statement
+            print((vid != vids[0] and traci.vehicle.getWaitingTime(vid) == 0))
+            print(platoon_length > next_lane_space)
+            print((front_id and getNextEdge(vid) != getNextEdge(front_id)))
             if ((vid != vids[0] and traci.vehicle.getWaitingTime(vid) == 0) or 
                 platoon_length > next_lane_space or
                 (front_id and getNextEdge(vid) != getNextEdge(front_id))):
                 break
             platoon_members.append(vid)
+            i += 1
         print(platoon_members)
         if len(platoon_members) < 2:
             continue
@@ -153,6 +174,9 @@ def iterate_on_tls_junctions(all_junctions):
         
 
 if __name__ == "__main__":
+    # parse the net
+    net = sumolib.net.readNet(os.path.join("sim_cfg", "intelligent_traffic.net.xml"))
+    
     # command to start the simulation
     sumoCmd = ["sumo-gui", "--step-length", "0.1",
            "--tripinfo-output", os.path.join("sim_cfg", "tripinfo.xml"),

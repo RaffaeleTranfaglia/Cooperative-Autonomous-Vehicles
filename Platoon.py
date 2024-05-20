@@ -39,7 +39,6 @@ class PlatoonManager:
             traci.vehicle.setColor(vid, color)
             plexe.set_active_controller(vid, CACC)
             topology[vid] = {"front" : frontvid, "leader" : lid}
-            #plexe.add_member(lid, vid, i)
             plexe.use_controller_acceleration(vid, False)
             plexe.set_path_cacc_parameters(vid, cls.DISTANCE, 2, 1, 0.5)
             plexe.set_acc_headway_time(vid, 1.5)
