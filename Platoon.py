@@ -28,7 +28,6 @@ class PlatoonManager:
         plexe.set_active_controller(lid, DRIVER)
         plexe.use_controller_acceleration(lid, False)
         plexe.set_path_cacc_parameters(lid, cls.DISTANCE, 2, 1, 0.5)
-        plexe.set_acc_headway_time(lid, 1.5)
         topology = {}
         topology[lid] = {"front" : None, "leader" : lid}
         for i in range(1, len(vids)):
@@ -41,7 +40,6 @@ class PlatoonManager:
             topology[vid] = {"front" : frontvid, "leader" : lid}
             plexe.use_controller_acceleration(vid, False)
             plexe.set_path_cacc_parameters(vid, cls.DISTANCE, 2, 1, 0.5)
-            plexe.set_acc_headway_time(vid, 1.5)
         return topology
         
     @classmethod

@@ -136,7 +136,6 @@ def iterate_on_controlled_lanes(controlled_lanes, state, new_state):
             of the first vehicle (vids[0]) is set to zero. This is the reason why vid needs 
             to be different from vids[0] when checking the waitingTime.
             '''
-            #TOBEFIXED check the following if statement
             print((vid != vids[0] and traci.vehicle.getWaitingTime(vid) == 0))
             print(platoon_length > next_lane_space)
             print((front_id and getNextEdge(vid) != getNextEdge(front_id)))
