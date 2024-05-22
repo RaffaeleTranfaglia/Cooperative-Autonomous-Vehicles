@@ -1,8 +1,12 @@
 import traci
 import random
 from typing import Optional
-from plexe import Plexe, CACC, ACC, DRIVER
+from plexe import Plexe, CACC, DRIVER, RADAR_DISTANCE, RADAR_REL_SPEED
 from utils import Utils
+from io import TextIOWrapper
+
+#TOBEFIXED upgrade platoon data structure following the format: platoons[laneid][platoonid]->topology (["front"]["leader"])
+# platoon id is the leader id
 
 class PlatoonManager:
     # inter-vehicle distance
@@ -73,7 +77,8 @@ class PlatoonManager:
         self.last_members.add((last_member, traci.vehicle.getLaneID(last_member), 
                                              Utils.getNextEdge(last_member)))
         return
-        
+
+
     def clear_dead_platoons(self) -> None:
         """
         Check if there are any platoons that have crossed the intersection in order to clear them.
@@ -90,7 +95,8 @@ class PlatoonManager:
             # remove topology from platoons dict
             del self.platoons[current_lane]
             return
-    
+
+
     def _clear_platoon(self, topology: Optional[dict[str, dict[str, str]]]) -> None:
         """
         Disassemble a platoon.
@@ -176,7 +182,46 @@ class PlatoonManager:
                 print ("The given dictionary does not have \"front\" key")
                 raise KeyError()
         return
+
+
+    def restore_min_gap(self) -> None:
+        """
+        Restore the MinGap value of past platoon members which have a reduce value due 
+        to the platoon clearing maneuver.
+        """
+        members_restored = set()
+        for vid in self.ex_members:
+            if traci.vehicle.getMinGap(vid) == self.min_gap:
+                members_restored.add(vid)
+            elif (traci.vehicle.getLeader(vid)[1] + traci.vehicle.getMinGap(vid) >= self.min_gap):
+                traci.vehicle.setMinGap(vid, self.min_gap)
+                members_restored.add(vid)
+        self.ex_members.difference_update(members_restored)
+        return
     
-    def restore_min_gap(self):
-        # continue here
-        pass
+    def log_platoon_data(self, step: float, lane: str, out: TextIOWrapper):
+        """
+        For each member, retrieve the data needed for benchmarks.
+        Data retrieved:
+        - distance from the front vehicle (leader excluded)
+        - relative speed to the front vehicle (leader excluded)
+        - speed
+        - acceleration
+        The output is written in the given IO text stream.
+        
+        Args:
+            step (float): current simulation step
+            lane (str): lane id
+            out (TextIOWrapper): output stream in which to write the platoon metrics
+        """
+        for v in self.platoons[lane]:
+                if v == self.platoons[lane][v]["leader"]:
+                    distance = -1
+                    rel_speed = 0
+                else:
+                    radar = self.plexe.get_radar_data(v)
+                    distance = radar[RADAR_DISTANCE]
+                    rel_speed = radar[RADAR_REL_SPEED]
+                acc = traci.vehicle.getAcceleration(v)
+                out.write(f"{v},{step},{distance},{rel_speed},{traci.vehicle.getSpeed(v)},{acc}\n")
+        return

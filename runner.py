@@ -2,7 +2,6 @@ import os
 import sys
 import traci
 import sumolib
-from plexe import Plexe, RADAR_DISTANCE, RADAR_REL_SPEED
 from Platoon import PlatoonManager
 from utils import Utils
 
@@ -137,7 +136,7 @@ if __name__ == "__main__":
     
     # Log file containing the platoons related data.
     out = open(os.path.join("sim_benchmarks", "log.csv"), "w")
-    out.write("nodeId,time,distance,relativeSpeed,speed,acceleration,controllerAcceleration\n")
+    out.write("nodeId,time,distance,relativeSpeed,speed,acceleration\n")
     
     traci.addStepListener(platoon_manager.plexe)
     
@@ -151,27 +150,18 @@ if __name__ == "__main__":
         # check on platoons last members
         platoon_manager.clear_dead_platoons()
         
+        # check whether there is any member's MinGap value to be restored
+        platoon_manager.restore_min_gap()
+        
         iterate_on_tls_junctions(all_junctions)
         
         for lane in platoon_manager.platoons:
             # simulate intra-platoon communication
             platoon_manager.communicate(lane)
             
-            # TOBEFIXED move the log function into the platoon manager class
-            '''
-            For each member of each platoon, retrieve the data needed for benchmarks.
-            '''
-            for v in platoon_manager.platoons[lane]:
-                if v == platoon_manager.platoons[lane][v]["leader"]:
-                    distance = -1
-                    rel_speed = 0
-                else:
-                    radar = platoon_manager.plexe.get_radar_data(v)
-                    distance = radar[RADAR_DISTANCE]
-                    rel_speed = radar[RADAR_REL_SPEED]
-                acc = traci.vehicle.getAcceleration(v)
-                out.write(f"{v},{step},{distance},{rel_speed},{traci.vehicle.getSpeed(v)},{acc},{acc}\n")
-    
+            # log platoon metrics in the current step
+            platoon_manager.log_platoon_data(step, lane, out)
+        
         traci.simulationStep()
         step += 0.1
              
