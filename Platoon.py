@@ -59,6 +59,7 @@ class PlatoonManager:
         self.plexe.set_active_controller(lid, DRIVER)
         self.plexe.use_controller_acceleration(lid, False)
         self.plexe.set_path_cacc_parameters(lid, self.DISTANCE, 2, 1, 0.5)
+        self.plexe.set_fixed_lane(lid, traci.vehicle.getLaneIndex(lid))
         topology = {}
         topology[lid] = {"front" : None, "leader" : lid}
         for i in range(1, len(vids)):
@@ -71,6 +72,7 @@ class PlatoonManager:
             topology[vid] = {"front" : frontvid, "leader" : lid}
             self.plexe.use_controller_acceleration(vid, True)
             self.plexe.set_path_cacc_parameters(vid, self.DISTANCE, 2, 1, 0.5)
+            self.plexe.set_fixed_lane(vid, traci.vehicle.getLaneIndex(vid))
         
         self.platoons[lane] = topology
         last_member = vids[len(vids)-1]
@@ -114,6 +116,7 @@ class PlatoonManager:
             traci.vehicle.setSpeedMode(vid, 31)
             traci.vehicle.setColor(vid, (255,255,255,255))
             self.plexe.set_active_controller(vid, DRIVER)
+            self.plexe.set_fixed_lane(vid, -1)
             if vid == topology[vid]["leader"]: 
                 continue
             
@@ -124,7 +127,7 @@ class PlatoonManager:
             '''
             distance = traci.vehicle.getLeader(vid)[1]
             new_distance = distance - (self.min_gap / 10)
-            traci.vehicle.setMinGap(vid, new_distance if new_distance >= 1 else 1)
+            #traci.vehicle.setMinGap(vid, new_distance if new_distance >= 1 else 1)
         return
             
 
