@@ -1,7 +1,7 @@
 import traci
 import random
 from typing import Optional
-from plexe import Plexe, CACC, DRIVER, RADAR_DISTANCE, RADAR_REL_SPEED
+from plexe import Plexe, CACC, DRIVER, RADAR_DISTANCE, RADAR_REL_SPEED, ACC
 from utils import Utils
 from io import TextIOWrapper
 
@@ -69,7 +69,7 @@ class PlatoonManager:
             traci.vehicle.setColor(vid, color)
             self.plexe.set_active_controller(vid, CACC)
             topology[vid] = {"front" : frontvid, "leader" : lid}
-            self.plexe.use_controller_acceleration(vid, False)
+            self.plexe.use_controller_acceleration(vid, True)
             self.plexe.set_path_cacc_parameters(vid, self.DISTANCE, 2, 1, 0.5)
         
         self.platoons[lane] = topology
@@ -84,17 +84,19 @@ class PlatoonManager:
         Check if there are any platoons that have crossed the intersection in order to clear them.
         A platoon is considered dead when the last member has succesfully crossed the intersection.
         """
-        for v, current_lane, next_edge in self.last_members[:]:    # Iterate over a copy of the list
+        to_remove = set()
+        for v, current_lane, next_edge in self.last_members:
             if traci.vehicle.getRoadID(v) != next_edge:
                 continue
             
             topology = self.platoons[current_lane]
             self.ex_members.update(topology.keys())
             self._clear_platoon(topology)
-            self.last_members.remove((v, current_lane, next_edge))
+            to_remove.add((v, current_lane, next_edge))
             # remove topology from platoons dict
             del self.platoons[current_lane]
-            return
+        self.last_members.difference_update(to_remove)
+        return
 
 
     def _clear_platoon(self, topology: Optional[dict[str, dict[str, str]]]) -> None:
@@ -112,7 +114,8 @@ class PlatoonManager:
             traci.vehicle.setSpeedMode(vid, 31)
             traci.vehicle.setColor(vid, (255,255,255,255))
             self.plexe.set_active_controller(vid, DRIVER)
-            if vid == topology[vid]["leader"]: continue
+            if vid == topology[vid]["leader"]: 
+                continue
             
             '''
             In order to avoid collisions after changing controller, min_gap is set to a 
@@ -122,7 +125,7 @@ class PlatoonManager:
             distance = traci.vehicle.getLeader(vid)[1]
             new_distance = distance - (self.min_gap / 10)
             traci.vehicle.setMinGap(vid, new_distance if new_distance >= 1 else 1)
-            return
+        return
             
 
     def communicate(self, lane: str) -> None:
@@ -193,7 +196,7 @@ class PlatoonManager:
         for vid in self.ex_members:
             if traci.vehicle.getMinGap(vid) == self.min_gap:
                 members_restored.add(vid)
-            elif (traci.vehicle.getLeader(vid)[1] + traci.vehicle.getMinGap(vid) >= self.min_gap):
+            elif (traci.vehicle.getLeader(vid)[1] + traci.vehicle.getMinGap(vid) >= self.min_gap * 2):
                 traci.vehicle.setMinGap(vid, self.min_gap)
                 members_restored.add(vid)
         self.ex_members.difference_update(members_restored)
@@ -215,13 +218,13 @@ class PlatoonManager:
             out (TextIOWrapper): output stream in which to write the platoon metrics
         """
         for v in self.platoons[lane]:
-                if v == self.platoons[lane][v]["leader"]:
-                    distance = -1
-                    rel_speed = 0
-                else:
-                    radar = self.plexe.get_radar_data(v)
-                    distance = radar[RADAR_DISTANCE]
-                    rel_speed = radar[RADAR_REL_SPEED]
-                acc = traci.vehicle.getAcceleration(v)
-                out.write(f"{v},{step},{distance},{rel_speed},{traci.vehicle.getSpeed(v)},{acc}\n")
+            if v == self.platoons[lane][v]["leader"]:
+                distance = -1
+                rel_speed = 0
+            else:
+                radar = self.plexe.get_radar_data(v)
+                distance = radar[RADAR_DISTANCE]
+                rel_speed = radar[RADAR_REL_SPEED]
+            acc = traci.vehicle.getAcceleration(v)
+            out.write(f"{v},{step},{distance},{rel_speed},{traci.vehicle.getSpeed(v)},{acc}\n")
         return
