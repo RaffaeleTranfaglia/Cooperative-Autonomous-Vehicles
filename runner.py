@@ -2,7 +2,7 @@ import os
 import sys
 import traci
 import sumolib
-from Platoon import PlatoonManager
+from platoon import PlatoonManager
 from utils import Utils
 
 if "SUMO_HOME" in os.environ:

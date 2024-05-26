@@ -116,7 +116,7 @@ class PlatoonManager:
             traci.vehicle.setSpeedMode(vid, 31)
             traci.vehicle.setColor(vid, (255,255,255,255))
             self.plexe.set_active_controller(vid, DRIVER)
-            self.plexe.set_fixed_lane(vid, -1)
+            #self.plexe.set_fixed_lane(vid, -1)
             if vid == topology[vid]["leader"]: 
                 continue
             
