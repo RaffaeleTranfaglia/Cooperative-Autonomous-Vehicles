@@ -116,7 +116,7 @@ class PlatoonManager:
             traci.vehicle.setSpeedMode(vid, 31)
             traci.vehicle.setColor(vid, (255,255,255,255))
             self.plexe.set_active_controller(vid, DRIVER)
-            #self.plexe.set_fixed_lane(vid, -1)
+            self.plexe.set_fixed_lane(vid, -1)
             if vid == topology[vid]["leader"]: 
                 continue
             
@@ -192,16 +192,21 @@ class PlatoonManager:
 
     def restore_min_gap(self) -> None:
         """
-        Restore the MinGap value of past platoon members which have a reduce value due 
+        Restore the MinGap value of past platoon members which have a reduced value due 
         to the platoon clearing maneuver.
         """
         members_restored = set()
         for vid in self.ex_members:
-            if traci.vehicle.getMinGap(vid) == self.min_gap:
-                members_restored.add(vid)
-            elif (traci.vehicle.getLeader(vid)[1] + traci.vehicle.getMinGap(vid) >= self.min_gap * 2):
+            '''
+            If the vehicle has left the simulation or its minGap is already correct, it is removed 
+            from the list of members with reduced minGap. Otherwise the minGap is restored to the original 
+            value provided that the distance from the front vehicle is sufficient.
+            '''
+            if (vid in traci.vehicle.getIDList() 
+                and traci.vehicle.getMinGap(vid) != self.min_gap 
+                and (traci.vehicle.getLeader(vid)[1] + traci.vehicle.getMinGap(vid) >= self.min_gap * 2)):
                 traci.vehicle.setMinGap(vid, self.min_gap)
-                members_restored.add(vid)
+            members_restored.add(vid)
         self.ex_members.difference_update(members_restored)
         return
     

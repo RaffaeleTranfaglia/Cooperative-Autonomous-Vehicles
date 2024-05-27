@@ -111,7 +111,7 @@ def iterate_on_tls_junctions(all_junctions):
 
 if __name__ == "__main__":
     # parse the net
-    net = sumolib.net.readNet(os.path.join("sim_cfg", "intelligent_traffic.net.xml"))
+    net = sumolib.net.readNet(os.path.join("sim_cfg", "4way.net.xml"))
     utils = Utils(net, MIN_GAP)
     
     # command to start the simulation
