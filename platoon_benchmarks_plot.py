@@ -43,7 +43,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     # Read the CSV file into a DataFrame
-    df = pd.read_csv(os.path.join("sim_benchmarks", args.filename))
+    df = pd.read_csv(os.path.join(args.filename))
 
     # Group the data by 'ID'
     grouped_df = df.groupby('nodeId')

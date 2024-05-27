@@ -1,9 +1,7 @@
 import os
 import sys
 import traci
-import sumolib
 from platoon import PlatoonManager
-from utils import Utils
 
 if "SUMO_HOME" in os.environ:
     tools = os.path.join(os.environ["SUMO_HOME"], "tools")
@@ -43,20 +41,13 @@ def iterate_on_controlled_lanes(controlled_lanes, state, new_state):
         with its traffic light state in the current step
     """
     for lane in controlled_lanes:
-        print(f"lane = {lane}")
-        print(f"\tstate = {state[lane]}")
-        print(f"\tnew state = {new_state[lane]}")
         if state[lane] != 'r' or new_state[lane] != 'G':
             continue
         
-        print("it turned green")
-        
         platoon_length = 0
         vids = traci.lane.getLastStepVehicleIDs(lane)[::-1]
-        print(vids)
         if len(vids) == 0:
             continue
-        next_lane_space = utils.getLaneAvailableSpace(Utils.getNextEdge(vids[0]))
         platoon_members = []
         i = 0
         while i < len(vids):
@@ -64,28 +55,15 @@ def iterate_on_controlled_lanes(controlled_lanes, state, new_state):
             front_id = vids[i-1] if i > 0 else None
             platoon_length += traci.vehicle.getMinGap(vid) + traci.vehicle.getLength(vid)
             
-            print(f"platoon_length: {platoon_length}")
-            print(f"next_lane_space: {next_lane_space}")
-            print(f"getNextEdge(vid): {Utils.getNextEdge(vid)}")
-            if front_id:
-                print(f"getNextEdge(front_id): {Utils.getNextEdge(front_id)}")
-            print(f"waiting time: {traci.vehicle.getWaitingTime(vid)}")
-            
             '''
             Since this segment of code is executed when the traffic light turns green, the waitingTime
             of the first vehicle (vids[0]) is set to zero. This is the reason why vid needs 
             to be different from vids[0] when checking the waitingTime.
             '''
-            print((vid != vids[0] and traci.vehicle.getWaitingTime(vid) == 0))
-            print(platoon_length > next_lane_space)
-            print((front_id and Utils.getNextEdge(vid) != Utils.getNextEdge(front_id)))
-            if ((vid != vids[0] and traci.vehicle.getWaitingTime(vid) == 0) or 
-                platoon_length > next_lane_space or
-                (front_id and Utils.getNextEdge(vid) != Utils.getNextEdge(front_id))):
+            if ((vid != vids[0] and traci.vehicle.getWaitingTime(vid) == 0)):
                 break
             platoon_members.append(vid)
             i += 1
-        print(platoon_members)
         if len(platoon_members) < 2:
             continue
         platoon_manager.create_platoon(platoon_members, lane)
@@ -110,14 +88,10 @@ def iterate_on_tls_junctions(all_junctions):
         
 
 if __name__ == "__main__":
-    # parse the net
-    net = sumolib.net.readNet(os.path.join("sim_cfg", "intelligent_traffic.net.xml"))
-    utils = Utils(net, MIN_GAP)
-    
     # command to start the simulation
     sumoCmd = ["sumo-gui", "--step-length", "0.1",
            "--tripinfo-output", os.path.join("platoon_test","sim_cfg", "tripinfo.xml"),
-           "-c", os.path.join("platoon_test", "sim_cfg", "4way.sumo.cfg")]
+           "-c", os.path.join("platoon_test", "sim_cfg", "2way.sumo.cfg")]
     traci.start(sumoCmd)
     
     platoon_manager = PlatoonManager(MIN_GAP)
@@ -135,7 +109,7 @@ if __name__ == "__main__":
     
     
     # Log file containing the platoons related data.
-    out = open(os.path.join("sim_benchmarks", "log.csv"), "w")
+    out = open(os.path.join("platoon_test", "benchmarks", "log.csv"), "w")
     out.write("nodeId,time,distance,relativeSpeed,speed,acceleration\n")
     
     traci.addStepListener(platoon_manager.plexe)
@@ -149,12 +123,23 @@ if __name__ == "__main__":
     while step < STEPS:
         iterate_on_tls_junctions(all_junctions)
         
+        to_remove = []
         for lane in platoon_manager.platoons:
+            print(len(platoon_manager.platoons[lane]))
+            key = next(iter(platoon_manager.platoons[lane]))
+            if (traci.vehicle.getDistance(platoon_manager.platoons[lane][key]["leader"]) >= 500):
+                platoon_manager._clear_platoon(platoon_manager.platoons[lane])
+                to_remove.append(lane)
+                continue
+            
             # simulate intra-platoon communication
             platoon_manager.communicate(lane)
             
             # log platoon metrics in the current step
             platoon_manager.log_platoon_data(step, lane, out)
+        
+        for lane in to_remove:
+            del platoon_manager.platoons[lane]
         
         traci.simulationStep()
         step += 0.1

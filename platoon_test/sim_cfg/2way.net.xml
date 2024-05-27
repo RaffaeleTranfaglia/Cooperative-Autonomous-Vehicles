@@ -40,8 +40,8 @@
         <lane id="E0_1" index="1" speed="13.89" length="50.00" shape="-1.60,100.00 -1.60,50.00"/>
     </edge>
     <edge id="E1" from="J1" to="J2" priority="-1">
-        <lane id="E1_0" index="0" speed="13.89" length="500.00" shape="-4.80,50.00 -4.80,-450.00"/>
-        <lane id="E1_1" index="1" speed="13.89" length="500.00" shape="-1.60,50.00 -1.60,-450.00"/>
+        <lane id="E1_0" index="0" speed="13.89" length="1000.00" shape="-4.80,50.00 -4.80,-950.00"/>
+        <lane id="E1_1" index="1" speed="13.89" length="1000.00" shape="-1.60,50.00 -1.60,-950.00"/>
     </edge>
 
     <tlLogic id="J1" type="actuated" programID="0" offset="0">

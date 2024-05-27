@@ -119,15 +119,6 @@ class PlatoonManager:
             self.plexe.set_fixed_lane(vid, -1)
             if vid == topology[vid]["leader"]: 
                 continue
-            
-            '''
-            In order to avoid collisions after changing controller, min_gap is set to a 
-            value slightly lower than the actual distance. The original min_gap will be restored as soon 
-            as the space between vehicles becomes available.
-            '''
-            distance = traci.vehicle.getLeader(vid)[1]
-            new_distance = distance - (self.min_gap / 10)
-            #traci.vehicle.setMinGap(vid, new_distance if new_distance >= 1 else 1)
         return
             
 
