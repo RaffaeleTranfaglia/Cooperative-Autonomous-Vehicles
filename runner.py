@@ -13,6 +13,8 @@ else:
     
 STEPS = 500
 MIN_GAP = 2
+PLATOON_SPEED = 15
+MAX_DECELERATION = -8
         
 
 def initialize_tls_phases(tls_state, all_junctions):
@@ -120,7 +122,7 @@ if __name__ == "__main__":
            "-c", os.path.join("sim_cfg", "4way.sumo.cfg")]
     traci.start(sumoCmd)
     
-    platoon_manager = PlatoonManager(MIN_GAP)
+    platoon_manager = PlatoonManager(MIN_GAP, MAX_DECELERATION, PLATOON_SPEED)
     
     '''
     The state of the traffic lights. A dictionary which indicates, for each traffic light 

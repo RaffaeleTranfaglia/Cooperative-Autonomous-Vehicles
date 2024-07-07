@@ -1,7 +1,7 @@
 import traci
 import random
 from typing import Optional
-from plexe import Plexe, CACC, DRIVER, RADAR_DISTANCE, RADAR_REL_SPEED, ACC
+from plexe import Plexe, CACC, DRIVER, RADAR_DISTANCE, RADAR_REL_SPEED
 from utils import Utils
 from io import TextIOWrapper
 
@@ -12,7 +12,7 @@ class PlatoonManager:
     # inter-vehicle distance
     DISTANCE = 3
     
-    def __init__(self, min_gap):
+    def __init__(self, min_gap, max_deceleration, platoon_speed):
         '''
         Dictionary storing all the topologies of the platoons currently operating in the environment.
         Each topology is associated to the lane where it was created.
@@ -38,6 +38,16 @@ class PlatoonManager:
         self.min_gap = min_gap
         
         '''
+        Maximum vehicle deceleration of the simulation. It is a negative float number.
+        '''
+        self.max_deceleration = max_deceleration
+        
+        '''
+        Fixed speed that must be mantained by platoon members.
+        '''
+        self.platoon_speed = platoon_speed
+        
+        '''
         Plexe API
         '''
         self.plexe = Plexe()
@@ -60,6 +70,7 @@ class PlatoonManager:
         self.plexe.use_controller_acceleration(lid, False)
         self.plexe.set_path_cacc_parameters(lid, self.DISTANCE, 2, 1, 0.5)
         self.plexe.set_fixed_lane(lid, traci.vehicle.getLaneIndex(lid))
+        traci.vehicle.setSpeed(lid, self.platoon_speed)
         topology = {}
         topology[lid] = {"front" : None, "leader" : lid}
         for i in range(1, len(vids)):
@@ -88,7 +99,8 @@ class PlatoonManager:
         """
         to_remove = set()
         for v, current_lane, next_edge in self.last_members:
-            if traci.vehicle.getRoadID(v) != next_edge:
+            radar = self.plexe.get_radar_data(v)
+            if traci.vehicle.getRoadID(v) != next_edge or radar[RADAR_DISTANCE] < self.min_gap:
                 continue
             
             topology = self.platoons[current_lane]
@@ -114,11 +126,10 @@ class PlatoonManager:
         print(f"Freeing a platoon composed of {topology}")
         for vid in topology:
             traci.vehicle.setSpeedMode(vid, 31)
+            traci.vehicle.setSpeed(vid, -1)
             traci.vehicle.setColor(vid, (255,255,255,255))
             self.plexe.set_active_controller(vid, DRIVER)
             self.plexe.set_fixed_lane(vid, -1)
-            if vid == topology[vid]["leader"]: 
-                continue
         return
             
 
