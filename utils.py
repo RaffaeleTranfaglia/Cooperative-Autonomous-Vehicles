@@ -3,9 +3,10 @@ import traci
 from typing import Optional
 
 class Utils:
-    def __init__(self, net, min_gap):
+    def __init__(self, net, min_gap, platoon_intervehicle_distance):
         self.net = net
         self.min_gap = min_gap
+        self.platoon_intervehicle_distance = platoon_intervehicle_distance
 
     @staticmethod
     def getNextEdge(vid: str) -> Optional[str]:
@@ -46,7 +47,7 @@ class Utils:
             lane_id = lane.getID()
             lane_length = traci.lane.getLength(lane_id)
             n_vids = traci.lane.getLastStepVehicleNumber(lane_id)
-            occupied_space = n_vids + n_vids * self.min_gap
+            occupied_space = n_vids + n_vids * max(self.min_gap, self.platoon_intervehicle_distance)
             available_space = min(available_space, lane_length - occupied_space)
         
         return available_space
