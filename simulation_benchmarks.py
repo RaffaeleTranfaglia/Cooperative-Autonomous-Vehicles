@@ -14,13 +14,13 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Error: {e}")
         
-    print(len(tripinfos1))
+    print(f"total trips ended using platooning strategy: {len(tripinfos1)}")
     total_waiting_time_1 = 0
     for tripinfo1 in tripinfos1:
         total_waiting_time_1 += float(tripinfo1.get("waitingTime"))
         #print(tripinfo1.get("waitingTime"))
         
-    print(len(tripinfos2))
+    print(f"total trips ended: {len(tripinfos2)}")
     total_waiting_time_2 = 0
     for tripinfo2 in tripinfos2:
         total_waiting_time_2 += float(tripinfo2.get("waitingTime"))
