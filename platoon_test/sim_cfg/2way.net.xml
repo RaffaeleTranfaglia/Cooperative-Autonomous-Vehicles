@@ -51,7 +51,7 @@
         <param key="freq" value="500"/>
         <param key="file" value="junction.xml"/>
         <phase duration="30"  state="rr"/>
-        <phase duration="30" state="GG" minDur="5" maxDur="50"/>
+        <phase duration="30" state="GG" minDur="30" maxDur="50"/>
         <phase duration="3"  state="yy"/>
     </tlLogic>
 

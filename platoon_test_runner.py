@@ -1,7 +1,7 @@
 import os
 import sys
 import traci
-from platoon import PlatoonManager
+from Platoon import PlatoonManager
 
 if "SUMO_HOME" in os.environ:
     tools = os.path.join(os.environ["SUMO_HOME"], "tools")

@@ -2,7 +2,7 @@ import os
 import sys
 import traci
 import sumolib
-from platoon import PlatoonManager
+from Platoon import PlatoonManager
 from utils import Utils
 
 if "SUMO_HOME" in os.environ:
@@ -15,7 +15,8 @@ STEPS = 500
 MIN_GAP = 3
 PLATOON_SPEED = 15
 MAX_DECELERATION = -8
-        
+
+# nubmer of vehicles that pass intersection in worst case (no platoons, turn left) = 26 (measured with the current parameters using runner2.py)
 
 def initialize_tls_phases(tls_state, all_junctions):
     """
