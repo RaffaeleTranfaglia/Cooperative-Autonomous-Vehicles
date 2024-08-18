@@ -15,10 +15,10 @@ STEPS = 500
 MIN_GAP = 3
 PLATOON_SPEED = 15
 MAX_DECELERATION = -8
-
 # nubmer of vehicles that pass intersection in worst case (no platoons, turn left) = 26 (measured with the current parameters using runner2.py)
+MAX_VEHICLES_TO_OPTIMIZE = 26
 
-def initialize_tls_phases(tls_state, all_junctions):
+def initialize_tls_phases(tls_state, all_junctions) -> None:
     """
     Initialize the state of all the traffic lights in the environment.
 
@@ -57,7 +57,7 @@ def iterate_on_controlled_lanes(controlled_lanes, state, new_state):
         next_lane_space = utils.getLaneAvailableSpace(Utils.getNextEdge(vids[0]))
         platoon_members = []
         i = 0
-        while i < len(vids):
+        while i < len(vids) and i < MAX_VEHICLES_TO_OPTIMIZE:
             vid = vids[i]
             front_id = vids[i-1] if i > 0 else None
             platoon_length += traci.vehicle.getMinGap(vid) + traci.vehicle.getLength(vid)
