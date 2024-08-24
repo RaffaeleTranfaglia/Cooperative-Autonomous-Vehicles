@@ -14,20 +14,31 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Error: {e}")
         
-    print(f"total trips ended using platooning strategy: {len(tripinfos1)}")
+    trips_1 = len(tripinfos1)
+    trips_2 = len(tripinfos2)
+        
+    print(f"Total trips ended using platooning strategy: {trips_1}")
     total_waiting_time_1 = 0
     for tripinfo1 in tripinfos1:
         total_waiting_time_1 += float(tripinfo1.get("waitingTime"))
         #print(tripinfo1.get("waitingTime"))
         
-    print(f"total trips ended: {len(tripinfos2)}")
+    print(f"Total trips ended: {trips_2}")
     total_waiting_time_2 = 0
     for tripinfo2 in tripinfos2:
         total_waiting_time_2 += float(tripinfo2.get("waitingTime"))
         #print(tripinfo2.get("waitingTime"))
         
-    print(f"Total waiting time using platooning strategy: {total_waiting_time_1}")
-    print(f"Total waiting time: {total_waiting_time_2}")
+    trips_increment = trips_1 - trips_2
+    percent_trips_increment = trips_increment * 100 / trips_2
+    print(f"Trips increment by using platooning strategy: {round(percent_trips_increment, 2)}%\n")
+    
+    print(f"Total waiting time using platooning strategy: {round(total_waiting_time_1, 2)}")
+    print(f"Total waiting time: {round(total_waiting_time_2, 2)}")
+    
+    waiting_time_reduction = total_waiting_time_2 - total_waiting_time_1
+    percent_waiting_time_reduction = waiting_time_reduction * 100 / total_waiting_time_2
+    print(f"Reduction of total waiting time by using platooning strategy: {round(percent_waiting_time_reduction, 2)}%")
     
     #import numpy as np
     #loss = 0

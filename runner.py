@@ -78,10 +78,16 @@ def iterate_on_controlled_lanes(controlled_lanes, state, new_state):
             print((front_id and Utils.getNextEdge(vid) != Utils.getNextEdge(front_id)))
             '''
             if ((vid != vids[0] and traci.vehicle.getWaitingTime(vid) == 0) or 
-                platoon_length > next_lane_space or
-                (front_id and Utils.getNextEdge(vid) != Utils.getNextEdge(front_id))):
+                platoon_length > next_lane_space):
                 break
+            
+            if front_id and Utils.getNextEdge(vid) != Utils.getNextEdge(front_id):
+                print(platoon_members)
+                if len(platoon_members) > 1:
+                    platoon_manager.create_platoon(platoon_members, lane)
+                    platoon_members.clear()
             platoon_members.append(vid)
+            
             i += 1
         print(platoon_members)
         if len(platoon_members) < 2:
