@@ -6,8 +6,6 @@ from plexe import Plexe, CACC, DRIVER, RADAR_DISTANCE, RADAR_REL_SPEED
 from utils import Utils
 from io import TextIOWrapper
 
-#TOBEFIXED upgrade platoon data structure following the format: platoons[laneid][platoonid]->topology (["front"]["leader"])
-# platoon id is the leader id
 
 class PlatoonManager:
     # inter-vehicle distance
@@ -37,7 +35,7 @@ class PlatoonManager:
         Each platoon is associated with its state.
         Possible states:
             - standard: fixed speed
-            - braking: fixed acceleration (deceleration)
+            - braking: fixed negative acceleration (deceleration)
         The state conditions are actually applied only to the leader.
         Accordingly the other members will follow the leader's behaviour.
         '''
@@ -62,6 +60,13 @@ class PlatoonManager:
         Plexe API
         '''
         self.plexe = Plexe()
+        
+    
+    def _get_leader(self, lane, vid):
+        for lid, topology in self.platoons[lane].items():
+            if vid in topology:
+                return lid
+        return None
     
     
     def create_platoon(self, vids: list[str], lane: str) -> None:
@@ -69,9 +74,12 @@ class PlatoonManager:
         Create a platoon of n vehicles.
 
         Args:
-            vids (list[str]): list of members0 ids to add to the platoon
+            vids (list[str]): list of members' id to add to the platoon
             lane (str): id of the lane where the platoon is created
         """
+        
+        self.platoons[lane] = {}
+        
         lid = vids[0]
         print(f"Creating a platoon composed of {lid} {vids}")
         traci.vehicle.setSpeedMode(lid, 31)
@@ -83,7 +91,7 @@ class PlatoonManager:
         self.plexe.set_fixed_lane(lid, traci.vehicle.getLaneIndex(lid))
         traci.vehicle.setSpeed(lid, self.platoon_speed)
         topology = {}
-        topology[lid] = {"front" : None, "leader" : lid}
+        topology[lid] = {"front" : None}
         for i in range(1, len(vids)):
             vid = vids[i]
             traci.vehicle.setMinGap(vid, 0)
@@ -91,13 +99,13 @@ class PlatoonManager:
             traci.vehicle.setSpeedMode(vid, 0)
             traci.vehicle.setColor(vid, color)
             self.plexe.set_active_controller(vid, CACC)
-            topology[vid] = {"front" : frontvid, "leader" : lid}
+            topology[vid] = {"front" : frontvid}
             self.plexe.use_controller_acceleration(vid, True)
             self.plexe.set_path_cacc_parameters(vid, self.DISTANCE, 2, 1, 0.5)
             self.plexe.set_fixed_lane(vid, traci.vehicle.getLaneIndex(vid))
         
-        self.platoons[lane] = topology
-        self.platoons_state[lane] = "standard"
+        self.platoons[lane][lid] = topology
+        self.platoons_state[lid] = "standard"
         last_member = vids[len(vids)-1]
         self.last_members.add((last_member, traci.vehicle.getLaneID(last_member), 
                                              Utils.getNextEdge(last_member)))
@@ -110,21 +118,26 @@ class PlatoonManager:
         A platoon is considered dead when the last member has succesfully crossed the intersection 
         and the inter-vehicle distance is reached for all the members, or if the platoon is stationary.
         """
+        
         to_remove = set()
-        for v, current_lane, next_edge in self.last_members:
+        for v, starting_lane, next_edge in self.last_members:
+            lid = self._get_leader(starting_lane, v)
+            if not lid:
+                continue
+            topology = self.platoons[starting_lane][lid]
+            
             radar = self.plexe.get_radar_data(v)
             if (traci.vehicle.getRoadID(v) != next_edge or 
                 (radar[RADAR_DISTANCE] < self.DISTANCE and 
-                 traci.vehicle.getSpeed(self.platoons[current_lane][v]["leader"])) >= 0.5):
+                 traci.vehicle.getSpeed(lid)) >= 0.5):
                 continue
             
-            topology = self.platoons[current_lane]
             self.ex_members.update(topology.keys())
             self._clear_platoon(topology)
-            to_remove.add((v, current_lane, next_edge))
+            to_remove.add((v, starting_lane, next_edge))
             # remove topology from platoons dict
-            del self.platoons[current_lane]
-            del self.platoons_state[current_lane]
+            del self.platoons[starting_lane][lid]
+            del self.platoons_state[lid]
         self.last_members.difference_update(to_remove)
         return
 
@@ -138,6 +151,7 @@ class PlatoonManager:
             vehicle and platoon leader; each entry of the dictionary is a dictionary
             which includes the keys "leader" and "front".
         """
+        
         if not topology: return
         print(f"Freeing a platoon composed of {topology}")
         for vid in topology:
@@ -157,58 +171,55 @@ class PlatoonManager:
         Args:
             lane (str): lane id
         """
-        topology = self.platoons[lane]
-        if not topology:
-            return
         
-        '''
-        Access to the dictionary associated to one of the elements in order to get 
-        the leader id through the "leader" key.
-        '''
-        v = next(iter(topology.items()))[1]
-        try:
-            # get data about platoon leader
-            ld = self.plexe.get_vehicle_data(v["leader"])
-            '''
-            print("leader vehicle data:")
-            print(f"\tindex: {ld.index}")
-            print(f"\tu: {ld.u }")
-            print(f"\tacceleration: {ld.acceleration}")
-            print(f"\tspeed: {ld.speed}")
-            print(f"\tpos_x: {ld.pos_x}")
-            print(f"\tpos_y: {ld.pos_y}")
-            print(f"\ttime: {ld.time}")
-            print(f"\tlength: {ld.length}")
-            '''
-        except KeyError:
-            print ("The given dictionary does not have \"leader\" key")
-            raise KeyError()
-        
-        for vid, references in topology.items():
-            #print(f"vehicle: {vid}")
-            if vid == references["leader"]:
+        for lid in self.platoons[lane]:
+            topology = self.platoons[lane][lid]
+            if not topology:
                 continue
-            # pass leader vehicle data to CACC
-            self.plexe.set_leader_vehicle_data(vid, ld)
+            
             try:
-                # get data about the front vehicle
-                fd = self.plexe.get_vehicle_data(references["front"])
+                # get data about platoon leader
+                ld = self.plexe.get_vehicle_data(lid)
                 '''
-                print("front vehicle data:")
-                print(f"\tindex: {fd.index}")
-                print(f"\tu: {fd.u}")
-                print(f"\tacceleration: {fd.acceleration}")
-                print(f"\tspeed: {fd.speed}")
-                print(f"\tpos_x: {fd.pos_x}")
-                print(f"\tpos_y: {fd.pos_y}")
-                print(f"\ttime: {fd.time}")
-                print(f"\tlength: {fd.length}")
+                print("leader vehicle data:")
+                print(f"\tindex: {ld.index}")
+                print(f"\tu: {ld.u }")
+                print(f"\tacceleration: {ld.acceleration}")
+                print(f"\tspeed: {ld.speed}")
+                print(f"\tpos_x: {ld.pos_x}")
+                print(f"\tpos_y: {ld.pos_y}")
+                print(f"\ttime: {ld.time}")
+                print(f"\tlength: {ld.length}")
                 '''
-                # pass front vehicle data to CACC
-                self.plexe.set_front_vehicle_data(vid, fd)
             except KeyError:
-                print ("The given dictionary does not have \"front\" key")
+                print ("The given dictionary does not have \"leader\" key")
                 raise KeyError()
+            
+            for vid, references in topology.items():
+                #print(f"vehicle: {vid}")
+                if vid == lid:
+                    continue
+                # pass leader vehicle data to CACC
+                self.plexe.set_leader_vehicle_data(vid, ld)
+                try:
+                    # get data about the front vehicle
+                    fd = self.plexe.get_vehicle_data(references["front"])
+                    '''
+                    print("front vehicle data:")
+                    print(f"\tindex: {fd.index}")
+                    print(f"\tu: {fd.u}")
+                    print(f"\tacceleration: {fd.acceleration}")
+                    print(f"\tspeed: {fd.speed}")
+                    print(f"\tpos_x: {fd.pos_x}")
+                    print(f"\tpos_y: {fd.pos_y}")
+                    print(f"\ttime: {fd.time}")
+                    print(f"\tlength: {fd.length}")
+                    '''
+                    # pass front vehicle data to CACC
+                    self.plexe.set_front_vehicle_data(vid, fd)
+                except KeyError:
+                    print ("The given dictionary does not have \"front\" key")
+                    raise KeyError()
         return
 
 
@@ -235,26 +246,26 @@ class PlatoonManager:
         #braking_time = -(self.platoon_speed)/(deceleration)
         braking_time = self._calculate_time(0.5*deceleration, self.platoon_speed, -braking_space)
         
-        for v, current_lane, next_edge in self.last_members:
+        for v, starting_lane, next_edge in self.last_members:
             '''
-            if self.platoons_state[lane] == "braking":
+            if self.platoons_state[lid] == "braking":
                 continue
             '''
             if traci.vehicle.getRoadID(v) != next_edge:
                 continue
             
-            topology = self.platoons[current_lane]
-            lid = self.platoons[current_lane][v]["leader"]
+            lid = self._get_leader(starting_lane, v)
+            topology = self.platoons[starting_lane][lid]
             current_position = traci.vehicle.getLanePosition(lid)
             lane_length = traci.lane.getLength(traci.vehicle.getLaneID(lid))
             remaining_distance = lane_length - current_position
             
-            print(f"\nvid: {lid}")
+            print(f"\nlid: {lid}")
             print(f"braking_space: {braking_space}")
             print(f"braking_time: {braking_time}")
             print(f"remaining_distance: {remaining_distance}")
             
-            if self.platoons_state[current_lane] == "braking":
+            if self.platoons_state[lid] == "braking":
                 print(f"speed: {traci.vehicle.getSpeed(lid)}")
                 print(f"speed without traci: {traci.vehicle.getSpeedWithoutTraCI(lid)}")
                 print(f"acceleration: {traci.vehicle.getAcceleration(lid)}")
@@ -266,7 +277,7 @@ class PlatoonManager:
                 print(f"speed without traci: {traci.vehicle.getSpeedWithoutTraCI(lid)}")
                 print(f"acceleration: {traci.vehicle.getAcceleration(lid)}")
                 traci.vehicle.setAcceleration(lid, deceleration, braking_time)
-                self.platoons_state[current_lane] = "braking"
+                self.platoons_state[lid] = "braking"
 
 
     def restore_min_gap(self) -> None:
@@ -274,12 +285,13 @@ class PlatoonManager:
         Restore the MinGap value of past platoon members which have a reduced value due 
         to the platoon clearing maneuver.
         """
+        
         members_restored = set()
         for vid in self.ex_members:
             '''
             If the vehicle has left the simulation or its minGap is already correct, it is removed 
             from the list of members with reduced minGap. Otherwise the minGap is restored to the original 
-            value provided that the distance from the front vehicle is sufficient.
+            value, provided that the distance from the front vehicle is sufficient.
             '''
             if (vid in traci.vehicle.getIDList() 
                 and traci.vehicle.getMinGap(vid) != self.min_gap 
@@ -304,14 +316,15 @@ class PlatoonManager:
             lane (str): lane id
             out (TextIOWrapper): output stream in which to write the platoon metrics
         """
-        for v in self.platoons[lane]:
-            if v == self.platoons[lane][v]["leader"]:
-                distance = -1
-                rel_speed = 0
-            else:
-                radar = self.plexe.get_radar_data(v)
-                distance = radar[RADAR_DISTANCE]
-                rel_speed = radar[RADAR_REL_SPEED]
-            acc = traci.vehicle.getAcceleration(v)
-            out.write(f"{v},{step},{distance},{rel_speed},{traci.vehicle.getSpeed(v)},{acc}\n")
+        for lid, topology in self.platoons[lane].items():
+            for v in topology:
+                if v == lid:
+                    distance = -1
+                    rel_speed = 0
+                else:
+                    radar = self.plexe.get_radar_data(v)
+                    distance = radar[RADAR_DISTANCE]
+                    rel_speed = radar[RADAR_REL_SPEED]
+                acc = traci.vehicle.getAcceleration(v)
+                out.write(f"{v},{step},{distance},{rel_speed},{traci.vehicle.getSpeed(v)},{acc}\n")
         return
