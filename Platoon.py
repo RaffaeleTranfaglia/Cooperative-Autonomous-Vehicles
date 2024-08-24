@@ -12,54 +12,54 @@ class PlatoonManager:
     DISTANCE = 4
     
     def __init__(self, min_gap, max_deceleration, platoon_speed):
-        '''
-        Dictionary storing all the topologies of the platoons currently operating in the environment.
-        Each topology is associated to the lane where it was created.
-        '''
         self.platoons = {}
-        
         '''
-        Last members of the currently alive platoons.
+        Dictionary storing all the topologies of the platoons currently operating in the environment.\n
+        Each topology is associated to the lane where it was created and to the leader of the platoon.
+        '''
+        
+        self.last_members = set()
+        '''
+        Last members of the currently alive platoons.\n
         The scope of the set is to keep track of the last member in order to kwow when the whole platoon has
         crossed the junction.
         '''
-        self.last_members = set()
         
+        self.ex_members = set()
         '''
-        Past platoons members whose min_gap has been reduced.
+        Past platoons members whose min_gap has been reduced.\n
         The scope of the set is to keep track of the vehicles whose min_gap has to be restored.
         '''
-        self.ex_members = set()
         
+        self.platoons_state = {}
         '''
-        Each platoon is associated with its state.
+        Each platoon is associated with its state.\n
         Possible states:
             - standard: fixed speed
             - braking: fixed negative acceleration (deceleration)
         The state conditions are actually applied only to the leader.
         Accordingly the other members will follow the leader's behaviour.
         '''
-        self.platoons_state = {}
         
+        self.min_gap = min_gap
         '''
         Minimum inter-vehicle gap of the simulation.
         '''
-        self.min_gap = min_gap
         
+        self.max_deceleration = max_deceleration
         '''
         Maximum vehicle deceleration of the simulation. It is a negative float number.
         '''
-        self.max_deceleration = max_deceleration
         
+        self.platoon_speed = platoon_speed
         '''
         Fixed speed that must be mantained by platoon members.
         '''
-        self.platoon_speed = platoon_speed
         
+        self.plexe = Plexe()
         '''
         Plexe API
         '''
-        self.plexe = Plexe()
         
     
     def _get_leader(self, lane, vid):
