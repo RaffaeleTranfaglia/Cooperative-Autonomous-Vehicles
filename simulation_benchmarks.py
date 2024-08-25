@@ -1,8 +1,8 @@
 import xml.etree.ElementTree as ET
 
 if __name__ == "__main__":
-    feed1 = "sim_cfg/tripinfo.xml"
-    feed2 = "sim_cfg/tripinfo2.xml"
+    feed1 = "sim_cfg_2_lanes/tripinfo.xml"
+    feed2 = "sim_cfg_2_lanes/tripinfo2.xml"
     
     try:
         tree1 = ET.parse(feed1)

@@ -85,7 +85,7 @@ def iterate_on_controlled_lanes(controlled_lanes, state, new_state):
                 print(platoon_members)
                 if len(platoon_members) > 1:
                     platoon_manager.create_platoon(platoon_members, lane)
-                    platoon_members.clear()
+                platoon_members.clear()
             platoon_members.append(vid)
             
             i += 1
@@ -115,12 +115,12 @@ def iterate_on_tls_junctions(all_junctions):
 
 if __name__ == "__main__":
     # parse the net
-    net = sumolib.net.readNet(os.path.join("sim_cfg", "4way.net.xml"))
+    net = sumolib.net.readNet(os.path.join("sim_cfg_2_lanes", "4way.net.xml"))
     
     # command to start the simulation
     sumoCmd = ["sumo-gui", "--step-length", "0.1",
-           "--tripinfo-output", os.path.join("sim_cfg", "tripinfo.xml"),
-           "-c", os.path.join("sim_cfg", "4way.sumo.cfg")]
+           "--tripinfo-output", os.path.join("sim_cfg_2_lanes", "tripinfo.xml"),
+           "-c", os.path.join("sim_cfg_2_lanes", "4way.sumo.cfg")]
     traci.start(sumoCmd)
     
     platoon_manager = PlatoonManager(MIN_GAP, MAX_DECELERATION, PLATOON_SPEED)

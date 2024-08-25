@@ -78,7 +78,7 @@ class PlatoonManager:
             lane (str): id of the lane where the platoon is created
         """
         
-        self.platoons[lane] = {}
+        self.platoons.setdefault(lane, {})
         
         lid = vids[0]
         print(f"Creating a platoon composed of {lid} {vids}")
@@ -172,6 +172,8 @@ class PlatoonManager:
             lane (str): lane id
         """
         
+        print(f"platoons: {self.platoons}")
+        
         for lid in self.platoons[lane]:
             topology = self.platoons[lane][lid]
             if not topology:
@@ -180,8 +182,7 @@ class PlatoonManager:
             try:
                 # get data about platoon leader
                 ld = self.plexe.get_vehicle_data(lid)
-                '''
-                print("leader vehicle data:")
+                print(f"leader vehicle data ({lid}):")
                 print(f"\tindex: {ld.index}")
                 print(f"\tu: {ld.u }")
                 print(f"\tacceleration: {ld.acceleration}")
@@ -190,22 +191,21 @@ class PlatoonManager:
                 print(f"\tpos_y: {ld.pos_y}")
                 print(f"\ttime: {ld.time}")
                 print(f"\tlength: {ld.length}")
-                '''
             except KeyError:
                 print ("The given dictionary does not have \"leader\" key")
                 raise KeyError()
             
             for vid, references in topology.items():
-                #print(f"vehicle: {vid}")
+                print(f"vehicle: {vid}")
                 if vid == lid:
                     continue
                 # pass leader vehicle data to CACC
                 self.plexe.set_leader_vehicle_data(vid, ld)
                 try:
                     # get data about the front vehicle
-                    fd = self.plexe.get_vehicle_data(references["front"])
-                    '''
-                    print("front vehicle data:")
+                    fid = references["front"]
+                    fd = self.plexe.get_vehicle_data(fid)
+                    print(f"front vehicle data ({fid}):")
                     print(f"\tindex: {fd.index}")
                     print(f"\tu: {fd.u}")
                     print(f"\tacceleration: {fd.acceleration}")
@@ -214,7 +214,6 @@ class PlatoonManager:
                     print(f"\tpos_y: {fd.pos_y}")
                     print(f"\ttime: {fd.time}")
                     print(f"\tlength: {fd.length}")
-                    '''
                     # pass front vehicle data to CACC
                     self.plexe.set_front_vehicle_data(vid, fd)
                 except KeyError:

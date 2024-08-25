@@ -1,0 +1,51 @@
+<routes>
+	<!--decel="9"-->
+	<vType id="vtypeauto" accel="2.5" decel="8" sigma="0" length="4"
+		minGap="3" maxSpeed="36" color="255,255,255" probability="1"
+		carFollowModel="CC" tauEngine="0.5" omegaN="0.2" xi="1" c1="0.5"
+		lanesCount="4" ccAccel="4" ploegKp="0.2" ploegKd="0.7"
+		ploegH="0.5"/>
+
+	<!--
+	<vType id="vtypeauto" accel="2.5" decel="8" sigma="0" length="4" tau="3.0"
+		   minGap="2" maxSpeed="33.33" color="255,255,255" probability="1"
+		   carFollowModel="CC" tauEngine="0.5" omegaN="0.2" xi="1" c1="0.5"
+		   lanesCount="4" ccAccel="1.5" ploegKp="0.2" ploegKd="0.7"
+		   ploegH="0.5" speedFactor="2" laneChangeModel="LC2013_CC"
+		   lcStrategic="5" lcCooperative="5" lcSpeedGain="5" lcKeepRight="5"/>
+	-->
+
+	<route id="route_0" edges="end1_junction junction_end4"/>
+	<route id="route_1" edges="end1_junction junction_end3"/>
+	<route id="route_2" edges="end1_junction junction_end2"/>	
+
+	<route id="route_3" edges="end2_junction junction_end1"/>	
+	<route id="route_4" edges="end2_junction junction_end4"/>
+	<route id="route_5" edges="end2_junction junction_end3"/>
+
+	<route id="route_6" edges="end3_junction junction_end2"/>
+	<route id="route_7" edges="end3_junction junction_end1"/>	
+	<route id="route_8" edges="end3_junction junction_end4"/>
+
+	<route id="route_9" edges="end4_junction junction_end3"/>	
+	<route id="route_10" edges="end4_junction junction_end2"/>
+	<route id="route_11" edges="end4_junction junction_end1"/>
+
+	<flow id="flow0" begin="0" end="500" period="1" type="vtypeauto" route="route_0"> </flow>
+	<flow id="flow1" begin="0" end="500" period="1" type="vtypeauto" route="route_1"> </flow>
+	<flow id="flow2" begin="0" end="500" period="1" type="vtypeauto" route="route_2"> </flow>
+	<flow id="flow3" begin="0" end="500" period="1" type="vtypeauto" route="route_3"> </flow>
+	<flow id="flow4" begin="0" end="500" period="1" type="vtypeauto" route="route_4"> </flow>
+	<flow id="flow5" begin="0" end="500" period="1" type="vtypeauto" route="route_5"> </flow>
+	<flow id="flow6" begin="0" end="500" period="1" type="vtypeauto" route="route_6"> </flow>
+	<flow id="flow7" begin="0" end="500" period="1" type="vtypeauto" route="route_7"> </flow>
+	<flow id="flow8" begin="0" end="500" period="1" type="vtypeauto" route="route_8"> </flow>  
+	<flow id="flow9" begin="0" end="500" period="1" type="vtypeauto" route="route_9"> </flow> 
+	<flow id="flow10" begin="0" end="500" period="1" type="vtypeauto" route="route_10"> </flow> 
+	<flow id="flow11" begin="0" end="500" period="1" type="vtypeauto" route="route_11"> </flow> 
+
+	<!--
+	<flow id="flow0" begin="0" end="500" period="exp(0.5)" type="vtypeauto" route="route_0"></flow>
+	-->
+	
+</routes>
