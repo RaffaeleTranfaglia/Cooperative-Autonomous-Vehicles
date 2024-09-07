@@ -78,6 +78,13 @@ class PlatoonManager:
             lane (str): id of the lane where the platoon is created
         """
         
+        # If any of the new members is already in a platoon (is a leader),
+        # its platoon is cleared.
+        self.clear_if_member(vids)
+        
+        # Remove new members from the ex members if the are present.
+        self.ex_members.difference_update(vids)   
+        
         self.platoons.setdefault(lane, {})
         
         lid = vids[0]
@@ -140,6 +147,27 @@ class PlatoonManager:
             del self.platoons_state[lid]
         self.last_members.difference_update(to_remove)
         return
+    
+    
+    def clear_if_member(self, vids):
+        last_members_to_remove = []
+        topologies_to_remove = []
+        for lane, topologies in self.platoons.items():
+            for lid, topology in topologies.items():
+                if lid in vids:
+                    self.ex_members.update(topology.keys())
+                    self._clear_platoon(topology)
+                    topologies_to_remove.append((lane, lid))
+                    last_members_to_remove.extend(
+                        [last_member for last_member in self.last_members \
+                            if last_member[0] in topology.keys()]
+                        )
+        for lane, lid in topologies_to_remove:
+            # remove topology from platoons dict
+            del self.platoons[lane][lid]
+            del self.platoons_state[lid]
+        self.last_members.difference_update(last_members_to_remove)
+        return
 
 
     def _clear_platoon(self, topology: Optional[dict[str, dict[str, str]]]) -> None:
@@ -148,8 +176,7 @@ class PlatoonManager:
 
         Args:
             topology (dict[str, dict[str, str]]): a dictionary pointing each vehicle id to its front
-            vehicle and platoon leader; each entry of the dictionary is a dictionary
-            which includes the keys "leader" and "front".
+            vehicle.
         """
         
         if not topology: return

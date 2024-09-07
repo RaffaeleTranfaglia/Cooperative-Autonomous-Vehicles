@@ -12,8 +12,8 @@ STEPS = 500
 
 if __name__ == "__main__":
     sumoCmd = ["sumo-gui", "--step-length", "0.1",
-           "--tripinfo-output", os.path.join("sim_cfg_2_lanes", "tripinfo2.xml"),
-           "-c", os.path.join("sim_cfg_2_lanes", "4way.sumo.cfg")]
+           "--tripinfo-output", os.path.join("sim_cfg_grid", "tripinfo2.xml"),
+           "-c", os.path.join("sim_cfg_grid", "grid.sumo.cfg")]
     traci.start(sumoCmd)
     
     step = 0

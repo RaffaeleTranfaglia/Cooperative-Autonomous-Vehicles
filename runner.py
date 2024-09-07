@@ -46,7 +46,7 @@ def iterate_on_controlled_lanes(controlled_lanes, state, new_state):
         with its traffic light state in the current step
     """
     for lane in controlled_lanes:
-        if state[lane] != 'r' or new_state[lane] != 'G':
+        if state[lane] != 'r' or new_state[lane].lower() != 'g':
             continue
         
         platoon_length = 0
@@ -54,7 +54,10 @@ def iterate_on_controlled_lanes(controlled_lanes, state, new_state):
         print(vids)
         if len(vids) == 0:
             continue
-        next_lane_space = utils.getLaneAvailableSpace(Utils.getNextEdge(vids[0]))
+        leader_next_edge = Utils.getNextEdge(vids[0])
+        next_lane_space = utils.getLaneAvailableSpace(
+            leader_next_edge if leader_next_edge else traci.vehicle.getRoadID(vids[0])
+            )
         platoon_members = []
         i = 0
         while i < len(vids) and i < MAX_VEHICLES_TO_OPTIMIZE:
@@ -115,12 +118,12 @@ def iterate_on_tls_junctions(all_junctions):
 
 if __name__ == "__main__":
     # parse the net
-    net = sumolib.net.readNet(os.path.join("sim_cfg_2_lanes", "4way.net.xml"))
+    net = sumolib.net.readNet(os.path.join("sim_cfg_grid", "grid.net.xml"))
     
     # command to start the simulation
     sumoCmd = ["sumo-gui", "--step-length", "0.1",
-           "--tripinfo-output", os.path.join("sim_cfg_2_lanes", "tripinfo.xml"),
-           "-c", os.path.join("sim_cfg_2_lanes", "4way.sumo.cfg")]
+           "--tripinfo-output", os.path.join("sim_cfg_grid", "tripinfo.xml"),
+           "-c", os.path.join("sim_cfg_grid", "grid.sumo.cfg")]
     traci.start(sumoCmd)
     
     platoon_manager = PlatoonManager(MIN_GAP, MAX_DECELERATION, PLATOON_SPEED)

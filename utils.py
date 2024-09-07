@@ -22,6 +22,8 @@ class Utils:
         edges = traci.vehicle.getRoute(vid)
         curr = traci.vehicle.getRoadID(vid)
         i = 0
+        print(f'edges: {edges}')
+        print(f'curr: {curr}')
         while i < len(edges):
             if edges[i] == curr:
                 return edges[i+1] if i+1 < len(edges) else None
