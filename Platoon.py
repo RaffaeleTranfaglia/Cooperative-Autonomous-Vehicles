@@ -199,8 +199,6 @@ class PlatoonManager:
             lane (str): lane id
         """
         
-        print(f"platoons: {self.platoons}")
-        
         for lid in self.platoons[lane]:
             topology = self.platoons[lane][lid]
             if not topology:
@@ -277,11 +275,13 @@ class PlatoonManager:
             if self.platoons_state[lid] == "braking":
                 continue
             '''
+            '''
             if traci.vehicle.getRoadID(v) != next_edge:
                 continue
+            '''
             
             lid = self._get_leader(starting_lane, v)
-            topology = self.platoons[starting_lane][lid]
+            #topology = self.platoons[starting_lane][lid]
             current_position = traci.vehicle.getLanePosition(lid)
             lane_length = traci.lane.getLength(traci.vehicle.getLaneID(lid))
             remaining_distance = lane_length - current_position

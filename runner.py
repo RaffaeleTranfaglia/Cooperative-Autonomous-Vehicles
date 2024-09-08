@@ -46,12 +46,13 @@ def iterate_on_controlled_lanes(controlled_lanes, state, new_state):
         with its traffic light state in the current step
     """
     for lane in controlled_lanes:
-        if state[lane] != 'r' or new_state[lane].lower() != 'g':
+        if state[lane] != 'r' or new_state[lane] != 'G':
             continue
         
         platoon_length = 0
         vids = traci.lane.getLastStepVehicleIDs(lane)[::-1]
-        print(vids)
+        for vid in vids:
+            print(f'vid: {vid}, changeLaneStateRight: {traci.vehicle.getLaneChangeState(vid, -1)}, changeLaneStateLeft: {traci.vehicle.getLaneChangeState(vid, 1)}')
         if len(vids) == 0:
             continue
         leader_next_edge = Utils.getNextEdge(vids[0])
@@ -63,7 +64,7 @@ def iterate_on_controlled_lanes(controlled_lanes, state, new_state):
         while i < len(vids) and i < MAX_VEHICLES_TO_OPTIMIZE:
             vid = vids[i]
             front_id = vids[i-1] if i > 0 else None
-            platoon_length += traci.vehicle.getMinGap(vid) + traci.vehicle.getLength(vid)
+            platoon_length += platoon_manager.DISTANCE + traci.vehicle.getLength(vid)
             
             print(f"platoon_length: {platoon_length}")
             print(f"next_lane_space: {next_lane_space}")
@@ -122,8 +123,8 @@ if __name__ == "__main__":
     
     # command to start the simulation
     sumoCmd = ["sumo-gui", "--step-length", "0.1",
-           "--tripinfo-output", os.path.join("sim_cfg_grid", "tripinfo.xml"),
-           "-c", os.path.join("sim_cfg_grid", "grid.sumo.cfg")]
+           "--tripinfo-output", os.path.join("sim_cfg_grid_2_lanes", "tripinfo.xml"),
+           "-c", os.path.join("sim_cfg_grid_2_lanes", "grid.sumo.cfg")]
     traci.start(sumoCmd)
     
     platoon_manager = PlatoonManager(MIN_GAP, MAX_DECELERATION, PLATOON_SPEED)
