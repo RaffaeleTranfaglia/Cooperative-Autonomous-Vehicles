@@ -207,6 +207,7 @@ class PlatoonManager:
             try:
                 # get data about platoon leader
                 ld = self.plexe.get_vehicle_data(lid)
+                '''
                 print(f"leader vehicle data ({lid}):")
                 print(f"\tindex: {ld.index}")
                 print(f"\tu: {ld.u }")
@@ -216,6 +217,7 @@ class PlatoonManager:
                 print(f"\tpos_y: {ld.pos_y}")
                 print(f"\ttime: {ld.time}")
                 print(f"\tlength: {ld.length}")
+                '''
             except KeyError:
                 print ("The given dictionary does not have \"leader\" key")
                 raise KeyError()
@@ -230,6 +232,7 @@ class PlatoonManager:
                     # get data about the front vehicle
                     fid = references["front"]
                     fd = self.plexe.get_vehicle_data(fid)
+                    '''
                     print(f"front vehicle data ({fid}):")
                     print(f"\tindex: {fd.index}")
                     print(f"\tu: {fd.u}")
@@ -239,6 +242,7 @@ class PlatoonManager:
                     print(f"\tpos_y: {fd.pos_y}")
                     print(f"\ttime: {fd.time}")
                     print(f"\tlength: {fd.length}")
+                    '''
                     # pass front vehicle data to CACC
                     self.plexe.set_front_vehicle_data(vid, fd)
                 except KeyError:
@@ -275,16 +279,15 @@ class PlatoonManager:
             if self.platoons_state[lid] == "braking":
                 continue
             '''
-            '''
-            if traci.vehicle.getRoadID(v) != next_edge:
-                continue
-            '''
             
             lid = self._get_leader(starting_lane, v)
             #topology = self.platoons[starting_lane][lid]
             current_position = traci.vehicle.getLanePosition(lid)
             lane_length = traci.lane.getLength(traci.vehicle.getLaneID(lid))
             remaining_distance = lane_length - current_position
+            
+            if traci.vehicle.getRoadID(lid) != next_edge:
+                continue
             
             print(f"\nlid: {lid}")
             print(f"braking_space: {braking_space}")
@@ -302,6 +305,7 @@ class PlatoonManager:
                 print(f"speed: {traci.vehicle.getSpeed(lid)}")
                 print(f"speed without traci: {traci.vehicle.getSpeedWithoutTraCI(lid)}")
                 print(f"acceleration: {traci.vehicle.getAcceleration(lid)}")
+                traci.vehicle.setSpeed(lid, -1)
                 traci.vehicle.setAcceleration(lid, deceleration, braking_time)
                 self.platoons_state[lid] = "braking"
 
