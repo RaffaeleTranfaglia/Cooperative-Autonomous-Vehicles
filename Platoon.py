@@ -358,3 +358,16 @@ class PlatoonManager:
                 acc = traci.vehicle.getAcceleration(v)
                 out.write(f"{v},{step},{distance},{rel_speed},{traci.vehicle.getSpeed(v)},{acc}\n")
         return
+    
+    
+    def get_distance(self, vid: str) -> float:
+        """
+        Given a vehicle, return the distance from the front vehicle.
+
+        Args:
+            vid (str): vehicle
+
+        Returns:
+            float: distance
+        """
+        return self.plexe.get_radar_data(vid)[RADAR_DISTANCE]

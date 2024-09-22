@@ -12,7 +12,7 @@ else:
     sys.exit("Environment variable 'SUMO_HOME' not defined.")
     
 STEPS = 500
-MIN_GAP = 3
+MIN_GAP = 4
 PLATOON_SPEED = 11
 MAX_DECELERATION = -8
 # nubmer of vehicles that pass intersection in worst case (no platoons, turn left) = 26 (measured with the current parameters using runner2.py)
@@ -77,15 +77,13 @@ def iterate_on_controlled_lanes(controlled_lanes, state, new_state):
             Since this segment of code is executed when the traffic light turns green, the waitingTime
             of the first vehicle (vids[0]) is set to zero. This is the reason why vid needs 
             to be different from vids[0] when checking the waitingTime.
-            print((vid != vids[0] and traci.vehicle.getWaitingTime(vid) == 0))
-            print(platoon_length > next_lane_space)
-            print((front_id and Utils.getNextEdge(vid) != Utils.getNextEdge(front_id)))
             '''
             if ((vid != vids[0] and traci.vehicle.getWaitingTime(vid) == 0) or 
                 platoon_length > next_lane_space):
                 break
             
-            if front_id and Utils.getNextEdge(vid) != Utils.getNextEdge(front_id):
+            if front_id and (Utils.getNextEdge(vid) != Utils.getNextEdge(front_id) or 
+                             platoon_manager.get_distance(vid) > MIN_GAP):
                 print(platoon_members)
                 if len(platoon_members) > 1:
                     platoon_manager.create_platoon(platoon_members, lane)
