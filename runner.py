@@ -2,6 +2,7 @@ import os
 import sys
 import traci
 import sumolib
+import traci.constants
 from Platoon import PlatoonManager
 from utils import Utils
 
@@ -17,6 +18,13 @@ PLATOON_SPEED = 11
 MAX_DECELERATION = -8
 # nubmer of vehicles that pass intersection in worst case (no platoons, turn left) = 26 (measured with the current parameters using runner2.py)
 MAX_VEHICLES_TO_OPTIMIZE = 26
+
+
+def create_platoon(platoon_members: list[str], lane: str) -> None:
+    if len(platoon_members) > 1:
+        platoon_manager.create_platoon(platoon_members, lane)
+    platoon_members.clear()
+
 
 def initialize_tls_phases(tls_state, all_junctions) -> None:
     """
@@ -51,8 +59,6 @@ def iterate_on_controlled_lanes(controlled_lanes, state, new_state):
         
         platoon_length = 0
         vids = traci.lane.getLastStepVehicleIDs(lane)[::-1]
-        for vid in vids:
-            print(f'vid: {vid}, changeLaneStateRight: {traci.vehicle.getLaneChangeState(vid, -1)}, changeLaneStateLeft: {traci.vehicle.getLaneChangeState(vid, 1)}')
         if len(vids) == 0:
             continue
         leader_next_edge = Utils.getNextEdge(vids[0])
@@ -61,6 +67,7 @@ def iterate_on_controlled_lanes(controlled_lanes, state, new_state):
             )
         platoon_members = []
         i = 0
+        print(f'lane: {lane}')
         while i < len(vids) and i < MAX_VEHICLES_TO_OPTIMIZE:
             vid = vids[i]
             front_id = vids[i-1] if i > 0 else None
@@ -78,17 +85,26 @@ def iterate_on_controlled_lanes(controlled_lanes, state, new_state):
             of the first vehicle (vids[0]) is set to zero. This is the reason why vid needs 
             to be different from vids[0] when checking the waitingTime.
             '''
-            if ((vid != vids[0] and traci.vehicle.getWaitingTime(vid) == 0) or 
+            if ((vid != vids[0] and not traci.vehicle.getWaitingTime(vid)) or 
                 platoon_length > next_lane_space):
+                print(f'exiting while loop')
                 break
             
             if front_id and (Utils.getNextEdge(vid) != Utils.getNextEdge(front_id) or 
-                             platoon_manager.get_distance(vid) > MIN_GAP):
+                             platoon_manager.get_distance(vid) >= MIN_GAP):
                 print(platoon_members)
-                if len(platoon_members) > 1:
-                    platoon_manager.create_platoon(platoon_members, lane)
-                platoon_members.clear()
-            platoon_members.append(vid)
+                create_platoon(platoon_members, lane)
+                
+            print(f'vid: {vid}, lane change state: {traci.vehicle.getLaneChangeStatePretty(vid, traci.constants.LCA_BLOCKED)[0]}')
+            # if not vid has to change lane, i.e. left or right in the changelanestate bit mask
+            left_flag = 2**1
+            right_flag = 2**2
+            if utils.checkLaneChange(vid, left_flag) or utils.checkLaneChange(vid, right_flag):
+                print(platoon_members)
+                create_platoon(platoon_members, lane)
+            else:
+                print(f'vid added: {vid}')
+                platoon_members.append(vid)
             
             i += 1
         print(platoon_members)
@@ -111,7 +127,7 @@ def iterate_on_tls_junctions(all_junctions):
         new_state = {}
         for i, lane in enumerate(controlled_lanes):
             new_state[lane] = state[i]
-        iterate_on_controlled_lanes(controlled_lanes, tls_state[junction], new_state)
+        iterate_on_controlled_lanes(set(controlled_lanes), tls_state[junction], new_state)
         tls_state[junction] = new_state
         
 

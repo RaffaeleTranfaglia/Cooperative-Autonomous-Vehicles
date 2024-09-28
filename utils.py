@@ -1,6 +1,7 @@
 import sys
 import traci
 from typing import Optional
+from traci.constants import LCA_BLOCKED
 
 class Utils:
     def __init__(self, net, min_gap, platoon_intervehicle_distance):
@@ -51,3 +52,8 @@ class Utils:
             available_space = min(available_space, lane_length - occupied_space)
         
         return available_space
+    
+    
+    @staticmethod
+    def checkLaneChange(vid: str, bitmask: int) -> bool:
+        return (traci.vehicle.getLaneChangeState(vid, LCA_BLOCKED)[0] & bitmask) == bitmask
