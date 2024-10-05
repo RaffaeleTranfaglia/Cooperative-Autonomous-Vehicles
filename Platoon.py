@@ -239,6 +239,16 @@ class PlatoonManager:
                     print(f"\tpos_y: {fd.pos_y}")
                     print(f"\ttime: {fd.time}")
                     print(f"\tlength: {fd.length}")
+                    vd = self.plexe.get_vehicle_data(fid)
+                    print(f"vehicle data before update: {vid}")
+                    print(f"\tindex: {vd.index}")
+                    print(f"\tu: {vd.u}")
+                    print(f"\tacceleration: {vd.acceleration}")
+                    print(f"\tspeed: {vd.speed}")
+                    print(f"\tpos_x: {vd.pos_x}")
+                    print(f"\tpos_y: {vd.pos_y}")
+                    print(f"\ttime: {vd.time}")
+                    print(f"\tlength: {vd.length}\n")
                     # pass front vehicle data to CACC
                     self.plexe.set_front_vehicle_data(vid, fd)
                 except KeyError:

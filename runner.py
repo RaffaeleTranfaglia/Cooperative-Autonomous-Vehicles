@@ -14,7 +14,7 @@ else:
     
 STEPS = 500
 MIN_GAP = 4
-PLATOON_SPEED = 11
+PLATOON_SPEED = 10
 MAX_DECELERATION = -8
 # nubmer of vehicles that pass intersection in worst case (no platoons, turn left) = 26 (measured with the current parameters using runner2.py)
 MAX_VEHICLES_TO_OPTIMIZE = 26
