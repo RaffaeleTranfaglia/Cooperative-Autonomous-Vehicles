@@ -67,12 +67,14 @@ def iterate_on_controlled_lanes(controlled_lanes, state, new_state):
             )
         platoon_members = []
         i = 0
-        print(f'lane: {lane}')
+        print(f'\nlane: {lane}')
+        print(f"vids: {vids}")
         while i < len(vids) and i < MAX_VEHICLES_TO_OPTIMIZE:
             vid = vids[i]
             front_id = vids[i-1] if i > 0 else None
             platoon_length += platoon_manager.DISTANCE + traci.vehicle.getLength(vid)
             
+            print(f"vid: {vid}")
             print(f"platoon_length: {platoon_length}")
             print(f"next_lane_space: {next_lane_space}")
             print(f"getNextEdge(vid): {Utils.getNextEdge(vid)}")

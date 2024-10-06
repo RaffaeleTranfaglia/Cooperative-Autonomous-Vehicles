@@ -150,18 +150,19 @@ class PlatoonManager:
     
     
     def clear_if_member(self, vids):
-        last_members_to_remove = []
-        topologies_to_remove = []
+        last_members_to_remove = set()
+        topologies_to_remove = set()
         for lane, topologies in self.platoons.items():
             for lid, topology in topologies.items():
-                if lid in vids:
-                    self.ex_members.update(topology.keys())
-                    self._clear_platoon(topology)
-                    topologies_to_remove.append((lane, lid))
-                    last_members_to_remove.extend(
-                        [last_member for last_member in self.last_members \
-                            if last_member[0] in topology.keys()]
-                        )
+                for vid in vids:
+                    if vid in topology.keys():
+                        self.ex_members.update(topology.keys())
+                        self._clear_platoon(topology)
+                        topologies_to_remove.add((lane, lid))
+                        last_members_to_remove.update(
+                            [last_member for last_member in self.last_members \
+                                if last_member[0] in topology.keys()]
+                            )
         for lane, lid in topologies_to_remove:
             # remove topology from platoons dict
             del self.platoons[lane][lid]
@@ -207,6 +208,7 @@ class PlatoonManager:
             try:
                 # get data about platoon leader
                 ld = self.plexe.get_vehicle_data(lid)
+                '''
                 print(f"leader vehicle data ({lid}):")
                 print(f"\tindex: {ld.index}")
                 print(f"\tu: {ld.u }")
@@ -216,6 +218,7 @@ class PlatoonManager:
                 print(f"\tpos_y: {ld.pos_y}")
                 print(f"\ttime: {ld.time}")
                 print(f"\tlength: {ld.length}")
+                '''
             except KeyError:
                 print ("The given dictionary does not have \"leader\" key")
                 raise KeyError()
@@ -230,6 +233,7 @@ class PlatoonManager:
                     # get data about the front vehicle
                     fid = references["front"]
                     fd = self.plexe.get_vehicle_data(fid)
+                    '''
                     print(f"front vehicle data ({fid}):")
                     print(f"\tindex: {fd.index}")
                     print(f"\tu: {fd.u}")
@@ -249,6 +253,7 @@ class PlatoonManager:
                     print(f"\tpos_y: {vd.pos_y}")
                     print(f"\ttime: {vd.time}")
                     print(f"\tlength: {vd.length}\n")
+                    '''
                     # pass front vehicle data to CACC
                     self.plexe.set_front_vehicle_data(vid, fd)
                 except KeyError:

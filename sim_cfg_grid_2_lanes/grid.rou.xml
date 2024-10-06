@@ -10,10 +10,12 @@
 	<route id="route_0" edges="B4B3 B3B2 B2C2 C2C3 C3B3 B3A3"/>
 	<route id="route_1" edges="A3B3 B3C3 C3D3 D3E3"/>
 	<route id="route_2" edges="A0A1 A1B1 B1B2 B2C2 C2C3 C3D3"/>
+	<route id="route_3" edges="C0C1 C1B1 B1B2 B2C2 C2C1 C1D1 D1D2 D2E2 E2E3 E3D3 D3D4 D4E4"/>
 
 	<flow id="flow0" begin="0" end="500" period="1" type="vtypeauto" route="route_0"> </flow>
 	<flow id="flow1" begin="0" end="500" period="1" type="vtypeauto" route="route_1"> </flow>
 	<flow id="flow2" begin="0" end="500" period="1" type="vtypeauto" route="route_2"> </flow>
+	<flow id="flow3" begin="0" end="500" period="1" type="vtypeauto" route="route_3"> </flow>
 
 	<!--
 	<flow id="flow0" begin="0" end="500" period="exp(0.5)" type="vtypeauto" route="route_0"></flow>
