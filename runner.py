@@ -14,7 +14,7 @@ else:
     
 STEPS = 500
 MIN_GAP = 4
-PLATOON_SPEED = 10.5
+PLATOON_SPEED = 10
 MAX_DECELERATION = -8
 # nubmer of vehicles that pass intersection in worst case (no platoons, turn left) = 26 (measured with the current parameters using runner2.py)
 MAX_VEHICLES_TO_OPTIMIZE = 26
@@ -81,7 +81,7 @@ def iterate_on_controlled_lanes(controlled_lanes, state, new_state):
             if front_id:
                 print(f"getNextEdge(front_id): {Utils.getNextEdge(front_id)}")
             print(f"waiting time: {traci.vehicle.getWaitingTime(vid)}")
-            
+
             '''
             Since this segment of code is executed when the traffic light turns green, the waitingTime
             of the first vehicle (vids[0]) is set to zero. This is the reason why vid needs 
@@ -101,7 +101,8 @@ def iterate_on_controlled_lanes(controlled_lanes, state, new_state):
             # if not vid has to change lane, i.e. left or right in the changelanestate bit mask
             left_flag = 2**1
             right_flag = 2**2
-            if utils.checkLaneChange(vid, left_flag) or utils.checkLaneChange(vid, right_flag):
+            if ((utils.checkLaneChange(vid, left_flag) or utils.checkLaneChange(vid, right_flag)) or
+                (utils.getNextEdge(vid) not in [traci.lane.getEdgeID(link[0]) for link in traci.lane.getLinks(lane)])):
                 print(platoon_members)
                 create_platoon(platoon_members, lane)
             else:
@@ -139,8 +140,8 @@ if __name__ == "__main__":
     
     # command to start the simulation
     sumoCmd = ["sumo-gui", "--step-length", "0.1",
-           "--tripinfo-output", os.path.join("sim_cfg_grid_2_lanes", "tripinfo.xml"),
-           "-c", os.path.join("sim_cfg_grid_2_lanes", "grid.sumo.cfg")]
+           "--tripinfo-output", os.path.join("sim_cfg_grid_3_lanes", "tripinfo.xml"),
+           "-c", os.path.join("sim_cfg_grid_3_lanes", "grid.sumo.cfg")]
     traci.start(sumoCmd)
     
     platoon_manager = PlatoonManager(MIN_GAP, MAX_DECELERATION, PLATOON_SPEED)
