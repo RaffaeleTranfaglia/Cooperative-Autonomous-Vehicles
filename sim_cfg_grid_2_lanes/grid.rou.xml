@@ -11,11 +11,17 @@
 	<route id="route_1" edges="A3B3 B3C3 C3D3 D3E3"/>
 	<route id="route_2" edges="A0A1 A1B1 B1B2 B2C2 C2C3 C3D3"/>
 	<route id="route_3" edges="C0C1 C1B1 B1B2 B2C2 C2C1 C1D1 D1D2 D2E2 E2E3 E3D3 D3D4 D4E4"/>
+	<route id="route_4" edges="C0C1 C1C2 C2C3 C3C4"/>
+	<route id="route_5" edges="E2D2 D2D1 D1C1 C1C2 C2B2 B2B1 B1A1"/>
+	<route id="route_6" edges="D4D3 D3D2 D2D1 D1D0"/>
 
 	<flow id="flow0" begin="0" end="500" period="1" type="vtypeauto" route="route_0"> </flow>
 	<flow id="flow1" begin="0" end="500" period="1" type="vtypeauto" route="route_1"> </flow>
 	<flow id="flow2" begin="0" end="500" period="1" type="vtypeauto" route="route_2"> </flow>
 	<flow id="flow3" begin="0" end="500" period="1" type="vtypeauto" route="route_3"> </flow>
+	<flow id="flow4" begin="0" end="500" period="1" type="vtypeauto" route="route_4"> </flow>
+	<flow id="flow5" begin="0" end="500" period="1" type="vtypeauto" route="route_5"> </flow>
+	<flow id="flow6" begin="0" end="500" period="1" type="vtypeauto" route="route_6"> </flow>
 
 	<!--
 	<flow id="flow0" begin="0" end="500" period="exp(0.5)" type="vtypeauto" route="route_0"></flow>
