@@ -12,9 +12,9 @@ if "SUMO_HOME" in os.environ:
 else:
     sys.exit("Environment variable 'SUMO_HOME' not defined.")
     
-STEPS = 500
+STEPS = 3600
 MIN_GAP = 4
-PLATOON_SPEED = 10
+PLATOON_SPEED = 11
 MAX_DECELERATION = -8
 # nubmer of vehicles that pass intersection in worst case (no platoons, turn left) = 26 (measured with the current parameters using runner2.py)
 MAX_VEHICLES_TO_OPTIMIZE = 26
@@ -136,10 +136,10 @@ def iterate_on_tls_junctions(all_junctions):
 
 if __name__ == "__main__":
     # parse the net
-    net = sumolib.net.readNet(os.path.join("sim_cfg_grid", "grid.net.xml"))
+    net = sumolib.net.readNet(os.path.join("sim_cfg_grid_3_lanes", "grid.net.xml"))
     
     # command to start the simulation
-    sumoCmd = ["sumo-gui", "--step-length", "0.1",
+    sumoCmd = ["sumo", "--step-length", "0.1", 
            "--tripinfo-output", os.path.join("sim_cfg_grid_3_lanes", "tripinfo.xml"),
            "-c", os.path.join("sim_cfg_grid_3_lanes", "grid.sumo.cfg")]
     traci.start(sumoCmd)

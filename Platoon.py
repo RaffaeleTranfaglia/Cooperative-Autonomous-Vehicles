@@ -123,7 +123,8 @@ class PlatoonManager:
         """
         Check if there are any platoons that have crossed the intersection in order to clear them.
         A platoon is considered dead when the last member has succesfully crossed the intersection 
-        and the inter-vehicle distance is reached for all the members, or if the platoon is stationary.
+        and the inter-vehicle distance is reached for all the members, or if the platoon is stationary, 
+        or if the platoon's waiting time is above the desired threshold.
         """
         
         to_remove = set()
@@ -134,9 +135,8 @@ class PlatoonManager:
             topology = self.platoons[starting_lane][lid]
             
             radar = self.plexe.get_radar_data(v)
-            if (traci.vehicle.getRoadID(v) != next_edge or 
-                (radar[RADAR_DISTANCE] < self.DISTANCE and 
-                 traci.vehicle.getSpeed(lid)) >= 0.5):
+            if ((traci.vehicle.getRoadID(v) != next_edge or radar[RADAR_DISTANCE] < self.DISTANCE) and 
+                traci.vehicle.getWaitingTime(lid)) < 299 and traci.vehicle.getSpeed(lid) >= 0.5:
                 continue
             
             self.ex_members.update(topology.keys())

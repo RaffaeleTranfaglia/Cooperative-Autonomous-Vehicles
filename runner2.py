@@ -8,10 +8,10 @@ if "SUMO_HOME" in os.environ:
 else:
     sys.exit("Environment variable 'SUMO_HOME' not defined.")
     
-STEPS = 500
+STEPS = 3600
 
 if __name__ == "__main__":
-    sumoCmd = ["sumo-gui", "--step-length", "0.1",
+    sumoCmd = ["sumo", "--step-length", "0.1", 
            "--tripinfo-output", os.path.join("sim_cfg_grid_3_lanes", "tripinfo2.xml"),
            "-c", os.path.join("sim_cfg_grid_3_lanes", "grid.sumo.cfg")]
     traci.start(sumoCmd)
