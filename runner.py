@@ -14,8 +14,8 @@ else:
     
 STEPS = 3600
 MIN_GAP = 4
-PLATOON_SPEED = 11
-MAX_DECELERATION = -8
+PLATOON_SPEED = 10
+MAX_DECELERATION = -4
 # nubmer of vehicles that pass intersection in worst case (no platoons, turn left) = 26 (measured with the current parameters using runner2.py)
 MAX_VEHICLES_TO_OPTIMIZE = 26
 
@@ -89,6 +89,7 @@ def iterate_on_controlled_lanes(controlled_lanes, state, new_state):
             '''
             if ((vid != vids[0] and not traci.vehicle.getWaitingTime(vid)) or 
                 platoon_length > next_lane_space):
+                #or (len(platoon_members) > 1 and platoon_manager.get_distance(vid) != platoon_manager.get_distance(vids[i-1]))):
                 print(f'exiting while loop')
                 break
             

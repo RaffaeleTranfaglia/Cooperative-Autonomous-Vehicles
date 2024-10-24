@@ -136,7 +136,7 @@ class PlatoonManager:
             
             radar = self.plexe.get_radar_data(v)
             if ((traci.vehicle.getRoadID(v) != next_edge or radar[RADAR_DISTANCE] < self.DISTANCE) and 
-                traci.vehicle.getWaitingTime(lid)) < 299 and traci.vehicle.getSpeed(lid) >= 0.5:
+                traci.vehicle.getWaitingTime(lid) < 299 and (self.platoons_state[lid]=="standard" or traci.vehicle.getSpeed(lid) >= 0.5)):
                 continue
             
             self.ex_members.update(topology.keys())
@@ -262,37 +262,18 @@ class PlatoonManager:
         return
 
 
-    def _calculate_time(self, a, b, c):
-            # Calculate the discriminant
-            discriminant = b**2 - 4*a*c
-            
-            # Check if the discriminant is negative, which would mean no real solutions
-            if discriminant < 0:
-                return None
-            
-            '''
-            Given that the searched value is a time, only the soulution with the positive 
-            square root is calculated.
-            '''
-            t = (-b + math.sqrt(discriminant)) / (2*a)
-            
-            return t
-        
-
     def set_braking_state(self) -> None:
-        deceleration = self.max_deceleration/2
-        braking_space = -(self.platoon_speed**2)/(2*deceleration)
-        #braking_time = -(self.platoon_speed)/(deceleration)
-        braking_time = self._calculate_time(0.5*deceleration, self.platoon_speed, -braking_space)
+        deceleration = self.max_deceleration
+        braking_space = (self.platoon_speed**2)/(2*abs(deceleration))
+        braking_time = self.platoon_speed/abs(deceleration)
         
         for v, starting_lane, next_edge in self.last_members:
+            lid = self._get_leader(starting_lane, v)
             '''
             if self.platoons_state[lid] == "braking":
                 continue
             '''
             
-            lid = self._get_leader(starting_lane, v)
-            #topology = self.platoons[starting_lane][lid]
             current_position = traci.vehicle.getLanePosition(lid)
             lane_length = traci.lane.getLength(traci.vehicle.getLaneID(lid))
             remaining_distance = lane_length - current_position
@@ -308,16 +289,15 @@ class PlatoonManager:
             '''
             
             if self.platoons_state[lid] == "braking":
-                print(f"speed: {traci.vehicle.getSpeed(lid)}")
-                print(f"speed without traci: {traci.vehicle.getSpeedWithoutTraCI(lid)}")
-                print(f"acceleration: {traci.vehicle.getAcceleration(lid)}")
+                print("state = braking")
+                print(f"speed ({lid}): {traci.vehicle.getSpeed(lid)}")
+                print(f"acceleration ({lid}): {traci.vehicle.getAcceleration(lid)}")
                 continue
             
-            if remaining_distance <= braking_space + 5:
+            if remaining_distance <= abs(braking_space) + 5:
                 print("starting braking")
-                print(f"speed: {traci.vehicle.getSpeed(lid)}")
-                print(f"speed without traci: {traci.vehicle.getSpeedWithoutTraCI(lid)}")
-                print(f"acceleration: {traci.vehicle.getAcceleration(lid)}")
+                print(f"speed ({lid}): {traci.vehicle.getSpeed(lid)}")
+                print(f"acceleration ({lid}): {traci.vehicle.getAcceleration(lid)}")
                 traci.vehicle.setSpeed(lid, -1)
                 traci.vehicle.setAcceleration(lid, deceleration, braking_time)
                 self.platoons_state[lid] = "braking"

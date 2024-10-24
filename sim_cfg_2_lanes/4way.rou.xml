@@ -31,18 +31,18 @@
 	<route id="route_10" edges="end4_junction junction_end2"/>
 	<route id="route_11" edges="end4_junction junction_end1"/>
 
-	<flow id="flow0" begin="0" end="500" period="1" type="vtypeauto" route="route_0"> </flow>
-	<flow id="flow1" begin="0" end="500" period="1" type="vtypeauto" route="route_1"> </flow>
-	<flow id="flow2" begin="0" end="500" period="1" type="vtypeauto" route="route_2"> </flow>
-	<flow id="flow3" begin="0" end="500" period="1" type="vtypeauto" route="route_3"> </flow>
+	<flow id="flow0" begin="0" end="3600" period="1" type="vtypeauto" route="route_0"> </flow>
+	<flow id="flow1" begin="0" end="3600" period="1" type="vtypeauto" route="route_1"> </flow>
+	<flow id="flow2" begin="0" end="3600" period="1" type="vtypeauto" route="route_2"> </flow>
+	<flow id="flow3" begin="0" end="3600" period="1" type="vtypeauto" route="route_3"> </flow>
 	<flow id="flow4" begin="0" end="500" period="1" type="vtypeauto" route="route_4"> </flow>
-	<flow id="flow5" begin="0" end="500" period="1" type="vtypeauto" route="route_5"> </flow>
-	<flow id="flow6" begin="0" end="500" period="1" type="vtypeauto" route="route_6"> </flow>
-	<flow id="flow7" begin="0" end="500" period="1" type="vtypeauto" route="route_7"> </flow>
-	<flow id="flow8" begin="0" end="500" period="1" type="vtypeauto" route="route_8"> </flow>  
-	<flow id="flow9" begin="0" end="500" period="1" type="vtypeauto" route="route_9"> </flow> 
-	<flow id="flow10" begin="0" end="500" period="1" type="vtypeauto" route="route_10"> </flow> 
-	<flow id="flow11" begin="0" end="500" period="1" type="vtypeauto" route="route_11"> </flow> 
+	<flow id="flow5" begin="0" end="3600" period="1" type="vtypeauto" route="route_5"> </flow>
+	<flow id="flow6" begin="0" end="3600" period="1" type="vtypeauto" route="route_6"> </flow>
+	<flow id="flow7" begin="0" end="3600" period="1" type="vtypeauto" route="route_7"> </flow>
+	<flow id="flow8" begin="0" end="3600" period="1" type="vtypeauto" route="route_8"> </flow>  
+	<flow id="flow9" begin="0" end="3600" period="1" type="vtypeauto" route="route_9"> </flow> 
+	<flow id="flow10" begin="0" end="3600" period="1" type="vtypeauto" route="route_10"> </flow> 
+	<flow id="flow11" begin="0" end="3600" period="1" type="vtypeauto" route="route_11"> </flow> 
 
 	<!--
 	<flow id="flow0" begin="0" end="500" period="exp(0.5)" type="vtypeauto" route="route_0"></flow>
