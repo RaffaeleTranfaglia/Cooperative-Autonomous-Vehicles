@@ -8,3 +8,5 @@ plexe-pyapi/
 .DS_Store
 
 .vscode/
+
+sim_benchmarks/log.csv
