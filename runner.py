@@ -14,16 +14,10 @@ else:
     
 STEPS = 3600
 MIN_GAP = 4
-PLATOON_SPEED = 10
+PLATOON_SPEED = 11
 MAX_DECELERATION = -4
 # nubmer of vehicles that pass intersection in worst case (no platoons, turn left) = 26 (measured with the current parameters using runner2.py)
 MAX_VEHICLES_TO_OPTIMIZE = 26
-
-
-def create_platoon(platoon_members: list[str], lane: str) -> None:
-    if len(platoon_members) > 1:
-        platoon_manager.create_platoon(platoon_members, lane)
-    platoon_members.clear()
 
 
 def initialize_tls_phases(tls_state, all_junctions) -> None:
@@ -72,7 +66,7 @@ def iterate_on_controlled_lanes(controlled_lanes, state, new_state):
         while i < len(vids) and i < MAX_VEHICLES_TO_OPTIMIZE:
             vid = vids[i]
             front_id = vids[i-1] if i > 0 else None
-            platoon_length += platoon_manager.DISTANCE + traci.vehicle.getLength(vid)
+            platoon_length += MIN_GAP + traci.vehicle.getLength(vid)
             
             print(f"vid: {vid}")
             print(f"platoon_length: {platoon_length}")
@@ -89,31 +83,36 @@ def iterate_on_controlled_lanes(controlled_lanes, state, new_state):
             '''
             if ((vid != vids[0] and not traci.vehicle.getWaitingTime(vid)) or 
                 platoon_length > next_lane_space):
-                #or (len(platoon_members) > 1 and platoon_manager.get_distance(vid) != platoon_manager.get_distance(vids[i-1]))):
-                print(f'exiting while loop')
                 break
             
-            if front_id and (Utils.getNextEdge(vid) != Utils.getNextEdge(front_id) or 
-                             platoon_manager.get_distance(vid) >= MIN_GAP):
+            if len(platoon_members) > 1:
+                distance_vid = float(f"{platoon_manager.get_distance(vid):.1f}") + traci.vehicle.getMinGap(vid)
+                distance_front_id = float(f"{platoon_manager.get_distance(front_id):.1f}") + traci.vehicle.getMinGap(front_id)
+                print(f"vid: {vid}, distance: {distance_vid}")
+                print(f"front_id: {front_id}, distance: {distance_front_id}")
+            if front_id and (Utils.getNextEdge(vid) != Utils.getNextEdge(front_id)):
                 print(platoon_members)
-                create_platoon(platoon_members, lane)
+                platoon_manager.create_platoon(platoon_members, lane)
+                platoon_members.clear()
                 
-            print(f'vid: {vid}, lane change state: {traci.vehicle.getLaneChangeStatePretty(vid, traci.constants.LCA_BLOCKED)[0]}')
+            if front_id and (len(platoon_members) > 1 and float(f"{platoon_manager.get_distance(vid):.1f}") + traci.vehicle.getMinGap(vid) != float(f"{platoon_manager.get_distance(front_id):.1f}") + traci.vehicle.getMinGap(front_id)):
+                print(platoon_members)
+                platoon_manager.create_platoon(platoon_members, lane)
+                platoon_members = platoon_members[-1:]
+                
             # if not vid has to change lane, i.e. left or right in the changelanestate bit mask
             left_flag = 2**1
             right_flag = 2**2
             if ((utils.checkLaneChange(vid, left_flag) or utils.checkLaneChange(vid, right_flag)) or
                 (utils.getNextEdge(vid) not in [traci.lane.getEdgeID(link[0]) for link in traci.lane.getLinks(lane)])):
                 print(platoon_members)
-                create_platoon(platoon_members, lane)
+                platoon_manager.create_platoon(platoon_members, lane)
+                platoon_members.clear()
             else:
-                print(f'vid added: {vid}')
                 platoon_members.append(vid)
             
             i += 1
         print(platoon_members)
-        if len(platoon_members) < 2:
-            continue
         platoon_manager.create_platoon(platoon_members, lane)
         
 
@@ -137,12 +136,12 @@ def iterate_on_tls_junctions(all_junctions):
 
 if __name__ == "__main__":
     # parse the net
-    net = sumolib.net.readNet(os.path.join("sim_cfg_grid_3_lanes", "grid.net.xml"))
+    net = sumolib.net.readNet(os.path.join("sim_cfg_3_lanes", "4way.net.xml"))
     
     # command to start the simulation
     sumoCmd = ["sumo", "--step-length", "0.1", 
-           "--tripinfo-output", os.path.join("sim_cfg_grid_3_lanes", "tripinfo.xml"),
-           "-c", os.path.join("sim_cfg_grid_3_lanes", "grid.sumo.cfg")]
+           "--tripinfo-output", os.path.join("sim_cfg_3_lanes", "tripinfo.xml"),
+           "-c", os.path.join("sim_cfg_3_lanes", "4way.sumo.cfg")]
     traci.start(sumoCmd)
     
     platoon_manager = PlatoonManager(MIN_GAP, MAX_DECELERATION, PLATOON_SPEED)

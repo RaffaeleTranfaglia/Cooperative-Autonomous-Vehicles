@@ -55,8 +55,8 @@ def get_metrics(benchmark):
     }
 
 if __name__ == "__main__":
-    feed1 = "sim_cfg_grid_3_lanes/tripinfo.xml"
-    feed2 = "sim_cfg_grid_3_lanes/tripinfo2.xml"
+    feed1 = "sim_cfg_3_lanes/tripinfo.xml"
+    feed2 = "sim_cfg_3_lanes/tripinfo2.xml"
     
     try:
         tree1 = ET.parse(feed1)

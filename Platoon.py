@@ -78,6 +78,8 @@ class PlatoonManager:
             lane (str): id of the lane where the platoon is created
         """
         
+        if len(vids) < 4:
+            return
         # If any of the new members is already in a platoon (is a leader),
         # its platoon is cleared.
         self.clear_if_member(vids)
@@ -116,7 +118,7 @@ class PlatoonManager:
         last_member = vids[len(vids)-1]
         self.last_members.add((last_member, traci.vehicle.getLaneID(last_member), 
                                              Utils.getNextEdge(last_member)))
-        return
+        return list()
 
 
     def clear_dead_platoons(self) -> None:
@@ -289,15 +291,19 @@ class PlatoonManager:
             '''
             
             if self.platoons_state[lid] == "braking":
+                '''
                 print("state = braking")
                 print(f"speed ({lid}): {traci.vehicle.getSpeed(lid)}")
                 print(f"acceleration ({lid}): {traci.vehicle.getAcceleration(lid)}")
+                '''
                 continue
             
             if remaining_distance <= abs(braking_space) + 5:
+                '''
                 print("starting braking")
                 print(f"speed ({lid}): {traci.vehicle.getSpeed(lid)}")
                 print(f"acceleration ({lid}): {traci.vehicle.getAcceleration(lid)}")
+                '''
                 traci.vehicle.setSpeed(lid, -1)
                 traci.vehicle.setAcceleration(lid, deceleration, braking_time)
                 self.platoons_state[lid] = "braking"
@@ -318,7 +324,7 @@ class PlatoonManager:
             '''
             if (vid in traci.vehicle.getIDList() 
                 and traci.vehicle.getMinGap(vid) != self.min_gap 
-                and (traci.vehicle.getLeader(vid)[1] + traci.vehicle.getMinGap(vid) >= self.min_gap * 2)):
+                and (traci.vehicle.getLeader(vid)[1] + traci.vehicle.getMinGap(vid) >= self.min_gap * 1.5)):
                 traci.vehicle.setMinGap(vid, self.min_gap)
             members_restored.add(vid)
         self.ex_members.difference_update(members_restored)
