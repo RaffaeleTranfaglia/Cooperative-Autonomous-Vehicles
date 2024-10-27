@@ -4,8 +4,7 @@ from typing import Optional
 from traci.constants import LCA_BLOCKED
 
 class Utils:
-    def __init__(self, net, min_gap, platoon_intervehicle_distance):
-        self.net = net
+    def __init__(self, min_gap, platoon_intervehicle_distance):
         self.min_gap = min_gap
         self.platoon_intervehicle_distance = platoon_intervehicle_distance
 
@@ -30,7 +29,7 @@ class Utils:
         return None
 
 
-    def getLaneAvailableSpace(self, edge):
+    def getLaneAvailableSpace(self, edge, net):
         """
         The remaining available space (in meters) in the given edge.
         The available space is computed for every lane in the edge and the returned value is the minor.
@@ -44,7 +43,7 @@ class Utils:
         """
 
         available_space = sys.float_info.max
-        for lane in self.net.getEdge(edge).getLanes():
+        for lane in net.getEdge(edge).getLanes():
             lane_id = lane.getID()
             lane_length = traci.lane.getLength(lane_id)
             n_vids = traci.lane.getLastStepVehicleNumber(lane_id)
@@ -57,3 +56,13 @@ class Utils:
     @staticmethod
     def checkLaneChange(vid: str, bitmask: int) -> bool:
         return (traci.vehicle.getLaneChangeState(vid, LCA_BLOCKED)[0] & bitmask) == bitmask
+    
+    @staticmethod
+    def getTotalEdgesLength(net) -> float:
+        """
+        Compute the sum of the lengths of all edges
+
+        Returns:
+            float: Total edges length
+        """
+        return sum(edge.getLength() for edge in net.getEdges())

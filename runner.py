@@ -1,8 +1,11 @@
+import argparse
+import math
 import os
 import sys
 import traci
 import sumolib
 import traci.constants
+import xml.etree.ElementTree as ET
 from Platoon import PlatoonManager
 from utils import Utils
 
@@ -14,7 +17,7 @@ else:
     
 STEPS = 3600
 MIN_GAP = 4
-PLATOON_SPEED = 11
+PLATOON_SPEED = 10
 MAX_DECELERATION = -4
 # nubmer of vehicles that pass intersection in worst case (no platoons, turn left) = 26 (measured with the current parameters using runner2.py)
 MAX_VEHICLES_TO_OPTIMIZE = 26
@@ -57,7 +60,8 @@ def iterate_on_controlled_lanes(controlled_lanes, state, new_state):
             continue
         leader_next_edge = Utils.getNextEdge(vids[0])
         next_lane_space = utils.getLaneAvailableSpace(
-            leader_next_edge if leader_next_edge else traci.vehicle.getRoadID(vids[0])
+            leader_next_edge if leader_next_edge else traci.vehicle.getRoadID(vids[0]),
+            net
             )
         platoon_members = []
         i = 0
@@ -135,17 +139,33 @@ def iterate_on_tls_junctions(all_junctions):
         
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Traffic simulation using platooning system")
+    parser.add_argument("--cfg", type=str, help="Configuration file path")
+    args = parser.parse_args()
+    
+    cfg_tree = ET.parse(args.cfg)
+    root = cfg_tree.getroot()
+    route_file = root.find('./input/route-files').get('value')
+    net_file = root.find('./input/net-file').get('value')
+    
+    route_tree = ET.parse(os.path.join(os.path.dirname(args.cfg), route_file))
+    root = route_tree.getroot()
+    flows = root.findall('./flow')
+    flow_count = len(flows)
+    flow_period = float(flows[0].get('period')) if flows else 0
+    
     # parse the net
-    net = sumolib.net.readNet(os.path.join("sim_cfg_3_lanes", "4way.net.xml"))
+    net = sumolib.net.readNet(os.path.join(os.path.dirname(args.cfg), net_file))
+    traffic_density = flow_count * (1/flow_period) / math.log(1+Utils.getTotalEdgesLength(net))
     
     # command to start the simulation
     sumoCmd = ["sumo", "--step-length", "0.1", 
-           "--tripinfo-output", os.path.join("sim_cfg_3_lanes", "tripinfo.xml"),
-           "-c", os.path.join("sim_cfg_3_lanes", "4way.sumo.cfg")]
+           "--tripinfo-output", os.path.join(os.path.dirname(args.cfg), f"tripinfo-platooning_{round(traffic_density, 3)}.xml"),
+           "-c", args.cfg]
     traci.start(sumoCmd)
     
     platoon_manager = PlatoonManager(MIN_GAP, MAX_DECELERATION, PLATOON_SPEED)
-    utils = Utils(net, MIN_GAP, PlatoonManager.DISTANCE)
+    utils = Utils(MIN_GAP, PlatoonManager.DISTANCE)
     
     '''
     The state of the traffic lights. A dictionary which indicates, for each traffic light 
