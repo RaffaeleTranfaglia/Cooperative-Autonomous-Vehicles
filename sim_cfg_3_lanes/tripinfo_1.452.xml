@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2024-10-27 17:28:06 by Eclipse SUMO sumo Version 1.20.0
+<!-- generated on 2024-10-28 19:15:11 by Eclipse SUMO sumo Version 1.20.0
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
 
     <input>
         <net-file value="./sim_cfg_3_lanes/4way.net.xml"/>
-        <route-files value="./sim_cfg_3_lanes/4way.rou.xml"/>
+        <route-files value="./sim_cfg_3_lanes/12x1.rou.xml"/>
     </input>
 
     <output>
@@ -19,7 +19,7 @@
     </time>
 
     <traci_server>
-        <remote-port value="49312"/>
+        <remote-port value="49346"/>
     </traci_server>
 
     <gui_only>
