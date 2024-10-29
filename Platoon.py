@@ -78,7 +78,7 @@ class PlatoonManager:
             lane (str): id of the lane where the platoon is created
         """
         
-        if len(vids) < 4:
+        if len(vids) < 5:
             return
         # If any of the new members is already in a platoon (is a leader),
         # its platoon is cleared.
