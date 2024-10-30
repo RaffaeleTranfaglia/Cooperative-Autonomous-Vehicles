@@ -210,23 +210,11 @@ class PlatoonManager:
             try:
                 # get data about platoon leader
                 ld = self.plexe.get_vehicle_data(lid)
-                '''
-                print(f"leader vehicle data ({lid}):")
-                print(f"\tindex: {ld.index}")
-                print(f"\tu: {ld.u }")
-                print(f"\tacceleration: {ld.acceleration}")
-                print(f"\tspeed: {ld.speed}")
-                print(f"\tpos_x: {ld.pos_x}")
-                print(f"\tpos_y: {ld.pos_y}")
-                print(f"\ttime: {ld.time}")
-                print(f"\tlength: {ld.length}")
-                '''
             except KeyError:
                 print ("The given dictionary does not have \"leader\" key")
                 raise KeyError()
             
             for vid, references in topology.items():
-                #print(f"vehicle: {vid}")
                 if vid == lid:
                     continue
                 # pass leader vehicle data to CACC
@@ -235,27 +223,6 @@ class PlatoonManager:
                     # get data about the front vehicle
                     fid = references["front"]
                     fd = self.plexe.get_vehicle_data(fid)
-                    '''
-                    print(f"front vehicle data ({fid}):")
-                    print(f"\tindex: {fd.index}")
-                    print(f"\tu: {fd.u}")
-                    print(f"\tacceleration: {fd.acceleration}")
-                    print(f"\tspeed: {fd.speed}")
-                    print(f"\tpos_x: {fd.pos_x}")
-                    print(f"\tpos_y: {fd.pos_y}")
-                    print(f"\ttime: {fd.time}")
-                    print(f"\tlength: {fd.length}")
-                    vd = self.plexe.get_vehicle_data(fid)
-                    print(f"vehicle data before update: {vid}")
-                    print(f"\tindex: {vd.index}")
-                    print(f"\tu: {vd.u}")
-                    print(f"\tacceleration: {vd.acceleration}")
-                    print(f"\tspeed: {vd.speed}")
-                    print(f"\tpos_x: {vd.pos_x}")
-                    print(f"\tpos_y: {vd.pos_y}")
-                    print(f"\ttime: {vd.time}")
-                    print(f"\tlength: {vd.length}\n")
-                    '''
                     # pass front vehicle data to CACC
                     self.plexe.set_front_vehicle_data(vid, fd)
                 except KeyError:
@@ -271,10 +238,9 @@ class PlatoonManager:
         
         for v, starting_lane, next_edge in self.last_members:
             lid = self._get_leader(starting_lane, v)
-            '''
+            
             if self.platoons_state[lid] == "braking":
                 continue
-            '''
             
             current_position = traci.vehicle.getLanePosition(lid)
             lane_length = traci.lane.getLength(traci.vehicle.getLaneID(lid))
@@ -283,27 +249,7 @@ class PlatoonManager:
             if traci.vehicle.getRoadID(lid) != next_edge:
                 continue
             
-            '''
-            print(f"\nlid: {lid}")
-            print(f"braking_space: {braking_space}")
-            print(f"braking_time: {braking_time}")
-            print(f"remaining_distance: {remaining_distance}")
-            '''
-            
-            if self.platoons_state[lid] == "braking":
-                '''
-                print("state = braking")
-                print(f"speed ({lid}): {traci.vehicle.getSpeed(lid)}")
-                print(f"acceleration ({lid}): {traci.vehicle.getAcceleration(lid)}")
-                '''
-                continue
-            
             if remaining_distance <= abs(braking_space) + 5:
-                '''
-                print("starting braking")
-                print(f"speed ({lid}): {traci.vehicle.getSpeed(lid)}")
-                print(f"acceleration ({lid}): {traci.vehicle.getAcceleration(lid)}")
-                '''
                 traci.vehicle.setSpeed(lid, -1)
                 traci.vehicle.setAcceleration(lid, deceleration, braking_time)
                 self.platoons_state[lid] = "braking"

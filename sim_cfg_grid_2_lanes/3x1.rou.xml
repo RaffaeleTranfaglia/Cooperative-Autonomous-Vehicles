@@ -1,0 +1,15 @@
+<routes>
+	<vType id="vtypeauto" accel="2.5" decel="8" sigma="0" length="4"
+		minGap="4" maxSpeed="36" color="255,255,255" probability="1"
+		carFollowModel="CC" tauEngine="0.5" omegaN="0.2" xi="1" c1="0.5"
+		lanesCount="4" ccAccel="4" ploegKp="0.2" ploegKd="0.7"
+		ploegH="0.5" lcAssertive="0.9"/>
+
+	<route id="route_0" edges="B4B3 B3B2 B2C2 C2C3 C3B3 B3A3"/>
+	<route id="route_1" edges="A3B3 B3C3 C3D3 D3E3"/>
+	<route id="route_2" edges="A0A1 A1B1 B1B2 B2C2 C2C3 C3D3"/>
+
+	<flow id="flow0" begin="0" end="3600" period="1" type="vtypeauto" route="route_0"> </flow>
+	<flow id="flow1" begin="0" end="3600" period="1" type="vtypeauto" route="route_1"> </flow>
+	<flow id="flow2" begin="0" end="3600" period="1" type="vtypeauto" route="route_2"> </flow>
+</routes>

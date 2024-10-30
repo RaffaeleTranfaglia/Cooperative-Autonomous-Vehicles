@@ -65,20 +65,10 @@ def iterate_on_controlled_lanes(controlled_lanes, state, new_state):
             )
         platoon_members = []
         i = 0
-        print(f'\nlane: {lane}')
-        print(f"vids: {vids}")
         while i < len(vids) and i < MAX_VEHICLES_TO_OPTIMIZE:
             vid = vids[i]
             front_id = vids[i-1] if i > 0 else None
             platoon_length += MIN_GAP + traci.vehicle.getLength(vid)
-            
-            print(f"vid: {vid}")
-            print(f"platoon_length: {platoon_length}")
-            print(f"next_lane_space: {next_lane_space}")
-            print(f"getNextEdge(vid): {Utils.getNextEdge(vid)}")
-            if front_id:
-                print(f"getNextEdge(front_id): {Utils.getNextEdge(front_id)}")
-            print(f"waiting time: {traci.vehicle.getWaitingTime(vid)}")
 
             '''
             Since this segment of code is executed when the traffic light turns green, the waitingTime
@@ -89,18 +79,14 @@ def iterate_on_controlled_lanes(controlled_lanes, state, new_state):
                 platoon_length > next_lane_space):
                 break
             
-            if len(platoon_members) > 1:
-                distance_vid = float(f"{platoon_manager.get_distance(vid):.1f}") + traci.vehicle.getMinGap(vid)
-                distance_front_id = float(f"{platoon_manager.get_distance(front_id):.1f}") + traci.vehicle.getMinGap(front_id)
-                print(f"vid: {vid}, distance: {distance_vid}")
-                print(f"front_id: {front_id}, distance: {distance_front_id}")
             if front_id and (Utils.getNextEdge(vid) != Utils.getNextEdge(front_id)):
-                print(platoon_members)
                 platoon_manager.create_platoon(platoon_members, lane)
                 platoon_members.clear()
                 
-            if front_id and (len(platoon_members) > 1 and float(f"{platoon_manager.get_distance(vid):.1f}") + traci.vehicle.getMinGap(vid) != float(f"{platoon_manager.get_distance(front_id):.1f}") + traci.vehicle.getMinGap(front_id)):
-                print(platoon_members)
+            if front_id and \
+                (len(platoon_members) > 1 and 
+                 float(f"{platoon_manager.get_distance(vid):.1f}") + traci.vehicle.getMinGap(vid) != float(f"{platoon_manager.get_distance(front_id):.1f}") + traci.vehicle.getMinGap(front_id)
+                 ):
                 platoon_manager.create_platoon(platoon_members, lane)
                 platoon_members = platoon_members[-1:]
                 
@@ -109,14 +95,12 @@ def iterate_on_controlled_lanes(controlled_lanes, state, new_state):
             right_flag = 2**2
             if ((utils.checkLaneChange(vid, left_flag) or utils.checkLaneChange(vid, right_flag)) or
                 (utils.getNextEdge(vid) not in [traci.lane.getEdgeID(link[0]) for link in traci.lane.getLinks(lane)])):
-                print(platoon_members)
                 platoon_manager.create_platoon(platoon_members, lane)
                 platoon_members.clear()
             else:
                 platoon_members.append(vid)
             
             i += 1
-        print(platoon_members)
         platoon_manager.create_platoon(platoon_members, lane)
         
 
