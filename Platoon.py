@@ -9,6 +9,11 @@ from io import TextIOWrapper
 class PlatoonManager:
     # inter-vehicle distance
     DISTANCE = 4
+    # minimum number of members
+    MIN_MEMBERS = 5
+    # maximum consecutive amount of time that the platoon can be stationary
+    # by default, the simulator teleports vehicles whose waiting time surpasses 300
+    WAITING_THRESHOLD = 299
     
     def __init__(self, min_gap, max_deceleration, platoon_speed):
         self.platoons = {}
@@ -61,7 +66,15 @@ class PlatoonManager:
         '''
         
     
-    def _get_leader(self, lane, vid):
+    def _get_leader(self, lane: str, vid: str):
+        """
+        Given a platoon member, return its leader.
+
+        Args:
+            lane (str): id of the lane where the platoon is created
+            vid (str): id of the member
+        """
+        
         for lid, topology in self.platoons[lane].items():
             if vid in topology:
                 return lid
@@ -77,13 +90,12 @@ class PlatoonManager:
             lane (str): id of the lane where the platoon is created
         """
         
-        if len(vids) < 5:
+        if len(vids) < self.MIN_MEMBERS:
             return
-        # If any of the new members is already in a platoon (is a leader),
-        # its platoon is cleared.
+        # If any of the new members is already in a platoon, its platoon is cleared.
         self.clear_if_member(vids)
         
-        # Remove new members from the ex members if the are present.
+        # Remove new members from the ex members.
         self.ex_members.difference_update(vids)   
         
         self.platoons.setdefault(lane, {})
@@ -136,8 +148,9 @@ class PlatoonManager:
             topology = self.platoons[starting_lane][lid]
             
             radar = self.plexe.get_radar_data(v)
-            if ((traci.vehicle.getRoadID(v) != next_edge or radar[RADAR_DISTANCE] < self.DISTANCE) and 
-                traci.vehicle.getWaitingTime(lid) < 299 and (self.platoons_state[lid]=="standard" or traci.vehicle.getSpeed(lid) >= 0.5)):
+            if ((traci.vehicle.getRoadID(v) != next_edge or self.get_distance(v) < self.DISTANCE) and 
+                traci.vehicle.getWaitingTime(lid) < self.WAITING_THRESHOLD and 
+                (self.platoons_state[lid]=="standard" or traci.vehicle.getSpeed(lid) >= 0.5)):
                 continue
             
             self.ex_members.update(topology.keys())
@@ -151,6 +164,13 @@ class PlatoonManager:
     
     
     def clear_if_member(self, vids):
+        """
+        For each active platoon member in the given list, clear its platoon.
+
+        Args:
+            vids (list[str]): vehicles to check
+        """
+        
         last_members_to_remove = set()
         topologies_to_remove = set()
         for lane, topologies in self.platoons.items():
@@ -231,6 +251,11 @@ class PlatoonManager:
 
 
     def set_braking_state(self) -> None:
+        """
+        Set the "braking" state for platoons that are aproaching the end of the target road.
+        This way, the platoon gradually decelerate until its speed is around zero and ready to be cleared. 
+        """
+        
         deceleration = self.max_deceleration
         braking_space = (self.platoon_speed**2)/(2*abs(deceleration))
         braking_time = self.platoon_speed/abs(deceleration)
@@ -274,6 +299,7 @@ class PlatoonManager:
             members_restored.add(vid)
         self.ex_members.difference_update(members_restored)
         return
+    
     
     def log_platoon_data(self, step: float, lane: str, out: TextIOWrapper):
         """
