@@ -48,7 +48,8 @@ def plot_throughput_data(df):
     plt.title("Throughput (considered unit time = 1 hour) over traffic intensity")
     plt.xlabel("Traffic intensity")
     plt.ylabel("Throughput")
-    plt.legend(title="Simulation kind")
+    plt.legend(title="Simulation kind", bbox_to_anchor=(1, 1), loc='upper left')
+    plt.tight_layout()  # Adjust layout to prevent clipping
     plt.show()
     
 def plot_waiting_time_data(df):
@@ -57,7 +58,8 @@ def plot_waiting_time_data(df):
     plt.title("Waiting time over traffic intensity")
     plt.xlabel("Traffic intensity")
     plt.ylabel("Waiting time [min]")
-    plt.legend(title="Simulation kind")
+    plt.legend(title="Simulation kind", bbox_to_anchor=(1, 1), loc='upper left')
+    plt.tight_layout()  # Adjust layout to prevent clipping
     plt.show()
 
 if __name__ == "__main__":

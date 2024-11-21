@@ -1,0 +1,1 @@
+# Managing intersections in a smart city exploiting the platooning system 
