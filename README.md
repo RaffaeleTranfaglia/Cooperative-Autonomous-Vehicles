@@ -1,7 +1,7 @@
 # Managing intersections in a smart city exploiting the platooning system
 The scope of the system is to optimize traffic flow in urban intersections by adopting the platooning strategy.  
 Adjacent agents that have to turn the same way will aggregate into a platoon.  
-[Here](./assets/clips/standard_simulation.mov) is shown the normal simulation and [here](./assets/clips/simulation_with_platooning.mov) the platooning algorythm behaviour.
+[Here](./assets/clips/standard_simulation.zip) is shown the normal simulation and [here](./assets/clips/simulation_with_platooning.zip) the platooning algorythm behaviour.
 
 ## Installation
 In order to set up the project the simulator [SUMO](https://eclipse.dev/sumo/) is required.
