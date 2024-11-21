@@ -127,7 +127,7 @@ if __name__ == "__main__":
         for lane in platoon_manager.platoons:
             print(len(platoon_manager.platoons[lane]))
             key = next(iter(platoon_manager.platoons[lane]))
-            if (traci.vehicle.getDistance(platoon_manager.platoons[lane][key]["leader"]) >= 500):
+            if (traci.vehicle.getDistance(platoon_manager.platoons[lane][key]["leader"]) >= 5000):
                 platoon_manager._clear_platoon(platoon_manager.platoons[lane])
                 to_remove.append(lane)
                 continue

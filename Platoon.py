@@ -1,4 +1,3 @@
-import math
 import traci
 import random
 from typing import Optional
@@ -109,7 +108,7 @@ class PlatoonManager:
             traci.vehicle.setColor(vid, color)
             self.plexe.set_active_controller(vid, CACC)
             topology[vid] = {"front" : frontvid}
-            self.plexe.use_controller_acceleration(vid, True)
+            self.plexe.use_controller_acceleration(vid, False)
             self.plexe.set_path_cacc_parameters(vid, self.DISTANCE, 2, 1, 0.5)
             self.plexe.set_fixed_lane(vid, traci.vehicle.getLaneIndex(vid))
         
