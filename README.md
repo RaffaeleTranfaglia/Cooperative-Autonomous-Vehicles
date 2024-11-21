@@ -11,6 +11,7 @@ To install dependencies:
 ```
 pip install requirements.txt
 ```
+One additional dependency is [PlexeAPI](https://github.com/michele-segata/plexe-pyapi).
 
 ## Usage
 To run the standard simulation:
