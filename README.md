@@ -6,7 +6,7 @@ Adjacent agents that have to turn the same way will aggregate into a platoon.
 ## Installation
 In order to set up the project the simulator [SUMO](https://eclipse.dev/sumo/) is required.
 
-It is recommended to set up the workspace in a virtual environment.
+It is recommended to set up the workspace in a virtual environment.  
 To install dependencies:
 ```
 pip install requirements.txt
