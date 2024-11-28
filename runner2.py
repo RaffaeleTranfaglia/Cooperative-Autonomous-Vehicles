@@ -35,7 +35,7 @@ if __name__ == "__main__":
     net = sumolib.net.readNet(os.path.join(os.path.dirname(args.cfg), net_file))
     traffic_density = flow_count * (1/flow_period) / math.log(1+Utils.getTotalEdgesLength(net))
     
-    sumoCmd = ["sumo-gui", "--step-length", "0.1", 
+    sumoCmd = ["sumo", "--step-length", "0.1", 
            "--tripinfo-output", os.path.join(os.path.dirname(args.cfg), f"tripinfo_{round(traffic_density, 3)}.xml"),
            "-c", args.cfg]
     traci.start(sumoCmd)

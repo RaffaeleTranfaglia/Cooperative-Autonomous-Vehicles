@@ -42,23 +42,23 @@ def process_folder(folder_path):
 
     return {"throughput": pd.DataFrame(data_throughput), "waiting_time": pd.DataFrame(data_waiting_time)}
 
-def plot_throughput_data(df):
+def plot_throughput_data(df, order):
     plt.figure(figsize=(12, 6))
-    sns.barplot(x="traffic_intensity", y="throughput", hue="category", data=df)
+    sns.barplot(x="traffic_intensity", y="throughput", hue="category", palette="Blues", data=df, hue_order=order)
     plt.title("Throughput (considered unit time = 1 hour) over traffic intensity")
     plt.xlabel("Traffic intensity")
     plt.ylabel("Throughput")
-    plt.legend(title="Simulation kind", bbox_to_anchor=(1, 1), loc='upper left')
+    plt.legend(title="Simulation kind", bbox_to_anchor=(0, 1), loc='upper left', ncol=2)
     plt.tight_layout()  # Adjust layout to prevent clipping
     plt.show()
     
-def plot_waiting_time_data(df):
+def plot_waiting_time_data(df, order):
     plt.figure(figsize=(12, 6))
-    sns.boxplot(x="traffic_intensity", y="waiting_time", hue="category", data=df)
+    sns.boxplot(x="traffic_intensity", y="waiting_time", hue="category", palette="Blues", data=df, hue_order=order)
     plt.title("Waiting time over traffic intensity")
     plt.xlabel("Traffic intensity")
     plt.ylabel("Waiting time [min]")
-    plt.legend(title="Simulation kind", bbox_to_anchor=(1, 1), loc='upper left')
+    plt.legend(title="Simulation kind", bbox_to_anchor=(0, 1), loc='upper left', ncol=2)
     plt.tight_layout()  # Adjust layout to prevent clipping
     plt.show()
 
@@ -70,10 +70,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     metrics = process_folder(args.folder_path)
+    order = ["tripinfo", "tripinfo-platooning"]
     
     if not metrics["throughput"].empty and not metrics["waiting_time"].empty:
-        plot_throughput_data(metrics["throughput"])
-        plot_waiting_time_data(metrics["waiting_time"])
+        plot_throughput_data(metrics["throughput"], order)
+        plot_waiting_time_data(metrics["waiting_time"], order)
     else:
         print("No matching files found or no valid data to plot.")
     
